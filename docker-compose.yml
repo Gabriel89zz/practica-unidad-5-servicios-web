@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  # 1. Java Spring Boot - Catálogo e Inventario
+  servicio-inventario-java:
+    build:
+      context: ./backend/java
+      dockerfile: Dockerfile
+    container_name: ecommerce-inventario-java
+    ports:
+      - "8081:8081"
+    environment:
+      - SERVER_PORT=8081
+    networks:
+      - ecommerce-net
+    restart: unless-stopped
+
+  # 2. Python FastAPI + Spyne - Envíos y Cálculo de Rutas
+  servicio-envios-python:
+    build:
+      context: ./backend/python
+      dockerfile: Dockerfile
+    container_name: ecommerce-envios-python
+    ports:
+      - "8082:8082"
+    environment:
+      - PORT=8082
+    networks:
+      - ecommerce-net
+    restart: unless-stopped
+
+  # 3. PHP Slim 4 + SoapServer - Gestión de Órdenes de Compra
+  servicio-ordenes-php:
+    build:
+      context: ./backend/php
+      dockerfile: Dockerfile
+    container_name: ecommerce-ordenes-php
+    ports:
+      - "8083:8083"
+    networks:
+      - ecommerce-net
+    restart: unless-stopped
+
+  # 4. Ruby Sinatra + Puma - Notificaciones y Webhooks
+  servicio-notificaciones-ruby:
+    build:
+      context: ./backend/ruby
+      dockerfile: Dockerfile
+    container_name: ecommerce-notificaciones-ruby
+    ports:
+      - "8084:8084"
+    networks:
+      - ecommerce-net
+    restart: unless-stopped
+
+  # 5. C# ASP.NET Core + CoreWCF - Facturación y Timbrado
+  servicio-facturacion-csharp:
+    build:
+      context: ./backend/csharp
+      dockerfile: Dockerfile
+    container_name: ecommerce-facturacion-csharp
+    ports:
+      - "8085:8085"
+    environment:
+      - ASPNETCORE_URLS=http://+:8085
+      - ASPNETCORE_ENVIRONMENT=Production
+    networks:
+      - ecommerce-net
+    restart: unless-stopped
+
+  # 6. VB.NET ASP.NET Core + CoreWCF - Auditoría y Bitácoras
+  servicio-auditoria-vbnet:
+    build:
+      context: ./backend
+      dockerfile: vbnet/Dockerfile
+    container_name: ecommerce-auditoria-vbnet
+    ports:
+      - "8086:8086"
+    environment:
+      - ASPNETCORE_URLS=http://+:8086
+      - ASPNETCORE_ENVIRONMENT=Production
+    networks:
+      - ecommerce-net
+    restart: unless-stopped
+
+networks:
+  ecommerce-net:
+    driver: bridge

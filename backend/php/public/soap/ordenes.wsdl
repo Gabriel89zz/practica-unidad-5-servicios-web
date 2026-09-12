@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="OrdenesService"
+             targetNamespace="http://ecommerce.com/ordenes"
+             xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:tns="http://ecommerce.com/ordenes"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <types>
+        <xsd:schema targetNamespace="http://ecommerce.com/ordenes">
+            <xsd:complexType name="EstadoOrdenResultado">
+                <xsd:sequence>
+                    <xsd:element name="id" type="xsd:string"/>
+                    <xsd:element name="clienteId" type="xsd:string"/>
+                    <xsd:element name="clienteNombre" type="xsd:string"/>
+                    <xsd:element name="estado" type="xsd:string"/>
+                    <xsd:element name="total" type="xsd:float"/>
+                    <xsd:element name="pagado" type="xsd:boolean"/>
+                    <xsd:element name="fechaCreacion" type="xsd:string"/>
+                    <xsd:element name="valido" type="xsd:boolean"/>
+                    <xsd:element name="mensaje" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+        </xsd:schema>
+    </types>
+
+    <message name="ValidarEstadoOrdenRequest">
+        <part name="ordenId" type="xsd:string"/>
+    </message>
+
+    <message name="ValidarEstadoOrdenResponse">
+        <part name="resultado" type="tns:EstadoOrdenResultado"/>
+    </message>
+
+    <portType name="OrdenesPortType">
+        <operation name="ValidarEstadoOrden">
+            <input message="tns:ValidarEstadoOrdenRequest"/>
+            <output message="tns:ValidarEstadoOrdenResponse"/>
+        </operation>
+    </portType>
+
+    <binding name="OrdenesBinding" type="tns:OrdenesPortType">
+        <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="ValidarEstadoOrden">
+            <soap:operation soapAction="http://ecommerce.com/ordenes#ValidarEstadoOrden"/>
+            <input>
+                <soap:body use="literal" namespace="http://ecommerce.com/ordenes"/>
+            </input>
+            <output>
+                <soap:body use="literal" namespace="http://ecommerce.com/ordenes"/>
+            </output>
+        </operation>
+    </binding>
+
+    <service name="OrdenesService">
+        <port name="OrdenesPort" binding="tns:OrdenesBinding">
+            <soap:address location="http://localhost:8083/soap/ordenes"/>
+        </port>
+    </service>
+</definitions>

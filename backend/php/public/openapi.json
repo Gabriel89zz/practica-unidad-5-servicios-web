@@ -1,0 +1,190 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Microservicio de Gestión de Órdenes (PHP Slim 4)",
+    "description": "API RESTful para creación, consulta y cancelación de órdenes de compra en el sistema de comercio electrónico. Práctica de Programación en Ambiente Cliente-Servidor.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8083",
+      "description": "Servidor Local / Contenedor Docker"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Token Bearer de prueba: 'test_token_2026'"
+      },
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "API-Key de prueba: 'secret_key_cs'"
+      }
+    },
+    "schemas": {
+      "OrderItem": {
+        "type": "object",
+        "required": ["sku", "cantidad", "precio_unitario"],
+        "properties": {
+          "sku": { "type": "string", "example": "LAP-001" },
+          "cantidad": { "type": "integer", "example": 1 },
+          "precio_unitario": { "type": "number", "format": "float", "example": 1899.99 }
+        }
+      },
+      "OrderRequest": {
+        "type": "object",
+        "required": ["cliente_id", "items"],
+        "properties": {
+          "cliente_id": { "type": "string", "example": "CLI-001" },
+          "cliente_nombre": { "type": "string", "example": "Laura Gómez Flores" },
+          "cliente_email": { "type": "string", "example": "laura.gomez@example.com" },
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/OrderItem" }
+          }
+        }
+      },
+      "OrderResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "ORD-2026-101" },
+          "cliente_id": { "type": "string", "example": "CLI-001" },
+          "cliente_nombre": { "type": "string", "example": "Laura Gómez Flores" },
+          "estado": { "type": "string", "example": "PAGADA" },
+          "subtotal": { "type": "number", "example": 1899.99 },
+          "iva": { "type": "number", "example": 303.99 },
+          "total": { "type": "number", "example": 2203.98 },
+          "pagado": { "type": "boolean", "example": true },
+          "fecha_creacion": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string", "example": "Unauthorized" },
+          "message": { "type": "string", "example": "Token Bearer o API-Key inválida o ausente." },
+          "statusCode": { "type": "integer", "example": 401 }
+        }
+      }
+    }
+  },
+  "security": [
+    { "BearerAuth": [] },
+    { "ApiKeyAuth": [] }
+  ],
+  "paths": {
+    "/api/v1/ordenes": {
+      "get": {
+        "summary": "Listar todas las órdenes de compra",
+        "tags": ["Órdenes"],
+        "responses": {
+          "200": {
+            "description": "Lista de órdenes recuperada con éxito",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/OrderResponse" }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crear una nueva orden de compra",
+        "tags": ["Órdenes"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/OrderRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Orden generada exitosamente",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/OrderResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos de orden inválidos o incompletos"
+          },
+          "401": {
+            "description": "No autorizado"
+          }
+        }
+      }
+    },
+    "/api/v1/ordenes/{id}": {
+      "get": {
+        "summary": "Obtener orden por su identificador único",
+        "tags": ["Órdenes"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "example": "ORD-2026-101" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalles de la orden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/OrderResponse" }
+              }
+            }
+          },
+          "404": {
+            "description": "Orden no encontrada"
+          },
+          "401": {
+            "description": "No autorizado"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Cancelar orden de compra",
+        "tags": ["Órdenes"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "example": "ORD-2026-101" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Orden cancelada exitosamente"
+          },
+          "404": {
+            "description": "Orden no encontrada"
+          },
+          "401": {
+            "description": "No autorizado"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+# Binarios y compilados
+**/bin/
+**/obj/
+**/target/
+**/__pycache__/
+*.pyc
+*.pyo
+vendor/
+.bundle/
+
+# IDEs
+.idea/
+.vscode/
+*.suo
+*.user
+
+# Archivos de entorno y bases de datos locales
+*.db
+*.sqlite
+.env
+.DS_Store

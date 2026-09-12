@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <RootNamespace>AuditoriaApi</RootNamespace>
+    <OptionExplicit>On</OptionExplicit>
+    <OptionCompare>Binary</OptionCompare>
+    <OptionStrict>Off</OptionStrict>
+    <OptionInfer>On</OptionInfer>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    <PackageReference Include="CoreWCF.Http" Version="1.6.0" />
+    <PackageReference Include="CoreWCF.Primitives" Version="1.6.0" />
+    <ProjectReference Include="..\shared\WcfHelper\WcfHelper.csproj" />
+  </ItemGroup>
+
+</Project>

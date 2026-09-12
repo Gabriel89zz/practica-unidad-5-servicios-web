@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="EnviosService"
+             targetNamespace="http://ecommerce.com/envios"
+             xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:tns="http://ecommerce.com/envios"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <types>
+        <xsd:schema targetNamespace="http://ecommerce.com/envios">
+            <xsd:complexType name="TarifaResultado">
+                <xsd:sequence>
+                    <xsd:element name="origen" type="xsd:string"/>
+                    <xsd:element name="destino" type="xsd:string"/>
+                    <xsd:element name="peso_kg" type="xsd:float"/>
+                    <xsd:element name="tipo_servicio" type="xsd:string"/>
+                    <xsd:element name="costo_envio" type="xsd:float"/>
+                    <xsd:element name="tiempo_estimado_dias" type="xsd:int"/>
+                    <xsd:element name="moneda" type="xsd:string"/>
+                    <xsd:element name="distancia_aprox_km" type="xsd:int"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <xsd:complexType name="RastreoResultado">
+                <xsd:sequence>
+                    <xsd:element name="numero_guia" type="xsd:string"/>
+                    <xsd:element name="estado" type="xsd:string"/>
+                    <xsd:element name="ubicacion_actual" type="xsd:string"/>
+                    <xsd:element name="fecha_estimada" type="xsd:string"/>
+                    <xsd:element name="encontrado" type="xsd:boolean"/>
+                </xsd:sequence>
+            </xsd:complexType>
+        </xsd:schema>
+    </types>
+
+    <message name="CalcularTarifaInput">
+        <part name="origen" type="xsd:string"/>
+        <part name="destino" type="xsd:string"/>
+        <part name="peso_kg" type="xsd:float"/>
+        <part name="tipo_servicio" type="xsd:string"/>
+    </message>
+
+    <message name="CalcularTarifaOutput">
+        <part name="CalcularTarifaResult" type="tns:TarifaResultado"/>
+    </message>
+
+    <message name="ConsultarGuiaInput">
+        <part name="numero_guia" type="xsd:string"/>
+    </message>
+
+    <message name="ConsultarGuiaOutput">
+        <part name="ConsultarGuiaResult" type="tns:RastreoResultado"/>
+    </message>
+
+    <portType name="EnviosPortType">
+        <operation name="CalcularTarifa">
+            <input message="tns:CalcularTarifaInput"/>
+            <output message="tns:CalcularTarifaOutput"/>
+        </operation>
+        <operation name="ConsultarGuia">
+            <input message="tns:ConsultarGuiaInput"/>
+            <output message="tns:ConsultarGuiaOutput"/>
+        </operation>
+    </portType>
+
+    <binding name="EnviosBinding" type="tns:EnviosPortType">
+        <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="CalcularTarifa">
+            <soap:operation soapAction="http://ecommerce.com/envios#CalcularTarifa"/>
+            <input>
+                <soap:body use="literal" namespace="http://ecommerce.com/envios"/>
+            </input>
+            <output>
+                <soap:body use="literal" namespace="http://ecommerce.com/envios"/>
+            </output>
+        </operation>
+        <operation name="ConsultarGuia">
+            <soap:operation soapAction="http://ecommerce.com/envios#ConsultarGuia"/>
+            <input>
+                <soap:body use="literal" namespace="http://ecommerce.com/envios"/>
+            </input>
+            <output>
+                <soap:body use="literal" namespace="http://ecommerce.com/envios"/>
+            </output>
+        </operation>
+    </binding>
+
+    <service name="EnviosService">
+        <port name="EnviosPort" binding="tns:EnviosBinding">
+            <soap:address location="http://localhost:8082/soap/envios"/>
+        </port>
+    </service>
+</definitions>

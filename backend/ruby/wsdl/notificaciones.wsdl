@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="NotificacionesService"
+             targetNamespace="http://ecommerce.com/notificaciones"
+             xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:tns="http://ecommerce.com/notificaciones"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <types>
+        <xsd:schema targetNamespace="http://ecommerce.com/notificaciones">
+            <xsd:complexType name="ResultadoDespacho">
+                <xsd:sequence>
+                    <xsd:element name="mensajeId" type="xsd:string"/>
+                    <xsd:element name="tipoAlerta" type="xsd:string"/>
+                    <xsd:element name="canal" type="xsd:string"/>
+                    <xsd:element name="destinatario" type="xsd:string"/>
+                    <xsd:element name="entregado" type="xsd:boolean"/>
+                    <xsd:element name="timestamp" type="xsd:string"/>
+                    <xsd:element name="estado" type="xsd:string"/>
+                    <xsd:element name="detalle" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+        </xsd:schema>
+    </types>
+
+    <message name="DespacharAlertaCriticaRequest">
+        <part name="tipoAlerta" type="xsd:string"/>
+        <part name="canal" type="xsd:string"/>
+        <part name="destinatario" type="xsd:string"/>
+        <part name="mensaje" type="xsd:string"/>
+        <part name="prioridad" type="xsd:string"/>
+    </message>
+
+    <message name="DespacharAlertaCriticaResponse">
+        <part name="resultado" type="tns:ResultadoDespacho"/>
+    </message>
+
+    <portType name="NotificacionesPortType">
+        <operation name="DespacharAlertaCritica">
+            <input message="tns:DespacharAlertaCriticaRequest"/>
+            <output message="tns:DespacharAlertaCriticaResponse"/>
+        </operation>
+    </portType>
+
+    <binding name="NotificacionesBinding" type="tns:NotificacionesPortType">
+        <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="DespacharAlertaCritica">
+            <soap:operation soapAction="http://ecommerce.com/notificaciones#DespacharAlertaCritica"/>
+            <input>
+                <soap:body use="literal" namespace="http://ecommerce.com/notificaciones"/>
+            </input>
+            <output>
+                <soap:body use="literal" namespace="http://ecommerce.com/notificaciones"/>
+            </output>
+        </operation>
+    </binding>
+
+    <service name="NotificacionesService">
+        <port name="NotificacionesPort" binding="tns:NotificacionesBinding">
+            <soap:address location="http://localhost:8084/soap/notificaciones"/>
+        </port>
+    </service>
+</definitions>

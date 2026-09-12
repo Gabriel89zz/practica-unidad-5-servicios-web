@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:tns="http://ecommerce.com/inventario"
+           targetNamespace="http://ecommerce.com/inventario"
+           elementFormDefault="qualified">
+
+    <xs:element name="ConsultarStockRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="sku" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="ConsultarStockResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="sku" type="xs:string"/>
+                <xs:element name="nombre" type="xs:string"/>
+                <xs:element name="stockDisponible" type="xs:int"/>
+                <xs:element name="disponible" type="xs:boolean"/>
+                <xs:element name="precioUnitario" type="xs:decimal"/>
+                <xs:element name="categoria" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="ActualizarStockRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="sku" type="xs:string"/>
+                <xs:element name="cantidadModificar" type="xs:int"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="ActualizarStockResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="sku" type="xs:string"/>
+                <xs:element name="nuevoStock" type="xs:int"/>
+                <xs:element name="exitoso" type="xs:boolean"/>
+                <xs:element name="mensaje" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>

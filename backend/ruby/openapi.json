@@ -1,0 +1,197 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Microservicio de Notificaciones y Webhooks (Ruby Sinatra)",
+    "description": "API RESTful para gestión de destinatarios, plantillas y alertas automáticas por correo y mensajería en el sistema distribuido. Práctica de Programación en Ambiente Cliente-Servidor.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8084",
+      "description": "Servidor Local / Contenedor Docker"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Token Bearer de prueba: 'test_token_2026'"
+      },
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "API-Key de prueba: 'secret_key_cs'"
+      }
+    },
+    "schemas": {
+      "Destinatario": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "DEST-001" },
+          "nombre": { "type": "string", "example": "Laura Gómez Flores" },
+          "email": { "type": "string", "example": "laura.gomez@example.com" },
+          "telefono": { "type": "string", "example": "+525512345678" },
+          "canal_preferido": { "type": "string", "example": "EMAIL" },
+          "activo": { "type": "boolean", "example": true }
+        }
+      },
+      "DestinatarioRequest": {
+        "type": "object",
+        "required": ["nombre", "email"],
+        "properties": {
+          "nombre": { "type": "string", "example": "Roberto Morales" },
+          "email": { "type": "string", "example": "roberto.m@example.com" },
+          "telefono": { "type": "string", "example": "+529998765432" },
+          "canal_preferido": { "type": "string", "example": "SMS" }
+        }
+      },
+      "Plantilla": {
+        "type": "object",
+        "properties": {
+          "codigo": { "type": "string", "example": "BIENVENIDA" },
+          "titulo": { "type": "string", "example": "Bienvenido a la plataforma" },
+          "cuerpo": { "type": "string", "example": "Hola {{nombre}}, tu cuenta ha sido creada con éxito." },
+          "canal": { "type": "string", "example": "EMAIL" }
+        }
+      },
+      "Alerta": {
+        "type": "object",
+        "properties": {
+          "mensaje_id": { "type": "string", "example": "MSG-2026-A1B2C3D4" },
+          "tipo_alerta": { "type": "string", "example": "PEDIDO_CREADO" },
+          "canal": { "type": "string", "example": "EMAIL" },
+          "destinatario": { "type": "string", "example": "laura.gomez@example.com" },
+          "mensaje": { "type": "string", "example": "Tu orden ha sido generada exitosamente." },
+          "prioridad": { "type": "string", "example": "ALTA" },
+          "entregado": { "type": "boolean", "example": true },
+          "timestamp": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string", "example": "Unauthorized" },
+          "message": { "type": "string", "example": "Token Bearer o API-Key inválida o ausente." },
+          "statusCode": { "type": "integer", "example": 401 }
+        }
+      }
+    }
+  },
+  "security": [
+    { "BearerAuth": [] },
+    { "ApiKeyAuth": [] }
+  ],
+  "paths": {
+    "/api/v1/destinatarios": {
+      "get": {
+        "summary": "Listar destinatarios de notificaciones",
+        "tags": ["Destinatarios"],
+        "responses": {
+          "200": {
+            "description": "Lista de destinatarios activos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Destinatario" }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Registrar nuevo destinatario",
+        "tags": ["Destinatarios"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DestinatarioRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Destinatario registrado",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Destinatario" }
+              }
+            }
+          },
+          "400": { "description": "Datos inválidos" },
+          "401": { "description": "No autorizado" }
+        }
+      }
+    },
+    "/api/v1/plantillas": {
+      "get": {
+        "summary": "Listar plantillas de notificación",
+        "tags": ["Plantillas"],
+        "responses": {
+          "200": {
+            "description": "Lista de plantillas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Plantilla" }
+                }
+              }
+            }
+          },
+          "401": { "description": "No autorizado" }
+        }
+      },
+      "post": {
+        "summary": "Crear o actualizar plantilla de mensaje",
+        "tags": ["Plantillas"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Plantilla" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Plantilla guardada exitosamente" },
+          "400": { "description": "Datos incompletos" },
+          "401": { "description": "No autorizado" }
+        }
+      }
+    },
+    "/api/v1/alertas": {
+      "get": {
+        "summary": "Historial de alertas despachadas",
+        "tags": ["Alertas"],
+        "responses": {
+          "200": {
+            "description": "Historial de alertas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Alerta" }
+                }
+              }
+            }
+          },
+          "401": { "description": "No autorizado" }
+        }
+      }
+    }
+  }
+}
