@@ -7,17 +7,29 @@ Prueba los 6 microservicios en REST y SOAP.
 
 import sys
 import json
+import os
 import urllib.request
 import urllib.error
 import xml.etree.ElementTree as ET
 
+HOST = "http://localhost"
+if len(sys.argv) > 1:
+    if sys.argv[1].startswith("--host="):
+        HOST = sys.argv[1].split("=")[1].rstrip("/")
+    elif sys.argv[1] == "--host" and len(sys.argv) > 2:
+        HOST = sys.argv[2].rstrip("/")
+    elif not sys.argv[1].startswith("-"):
+        HOST = sys.argv[1].rstrip("/")
+elif "SERVICES_HOST" in os.environ:
+    HOST = os.environ["SERVICES_HOST"].rstrip("/")
+
 BASE_URLS = {
-    "java": "http://localhost:8081",
-    "python": "http://localhost:8082",
-    "php": "http://localhost:8083",
-    "ruby": "http://localhost:8084",
-    "csharp": "http://localhost:8085",
-    "vbnet": "http://localhost:8086"
+    "java": f"{HOST}:8081",
+    "python": f"{HOST}:8082",
+    "php": f"{HOST}:8083",
+    "ruby": f"{HOST}:8084",
+    "csharp": f"{HOST}:8085",
+    "vbnet": f"{HOST}:8086"
 }
 
 VALID_AUTH_HEADERS = {

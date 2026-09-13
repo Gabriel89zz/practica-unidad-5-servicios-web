@@ -57,8 +57,18 @@ practica-unidad-5/
 │   │   ├── Program.cs
 │   │   └── README.md
 │   └── cli-tool/                  # Cliente 3: Terminal / Consola CLI (Python 3)
-│   │   ├── cli.py                 # Despacho de alertas (Ruby) y registro de auditoría (VB.NET)
-│   │   └── README.md
+│       ├── cli.py                 # Despacho de alertas (Ruby) y registro de auditoría (VB.NET)
+│       └── README.md
+├── scripts/                       # Scripts de automatización (.sh para Linux/Debian y .bat para Windows)
+│   ├── check_services.sh / .bat   # Verificación de salud y puertos 8081-8086
+│   ├── start_backend.sh           # Inicio de contenedores Docker en segundo plano
+│   ├── stop_backend.sh            # Detención de contenedores
+│   ├── run_web.sh / .bat          # Lanzador del Cliente Web SPA
+│   ├── run_cli.sh / .bat          # Lanzador del Cliente de Consola CLI
+│   ├── run_desktop.sh / .bat      # Lanzador del Cliente de Escritorio WinForms
+│   └── run_tests.sh / .bat        # Ejecutor de la suite de pruebas automatizadas
+├── run.sh                         # Menú interactivo unificado para Linux / Debian / macOS / WSL
+├── run.bat                        # Menú interactivo unificado para Windows
 └── docs/
     ├── ARCHITECTURE.md            # Justificación de diseño, diagramas y análisis SL vs Propietario
     ├── API_REFERENCE.md           # Catálogo detallado de todos los endpoints REST y ejemplos curl
@@ -72,16 +82,33 @@ practica-unidad-5/
 
 ## 4. Guía de Puesta en Marcha
 
-### Opción A: Despliegue con Docker Compose (Recomendado)
+### Opción 1: Menú Interactivo Todo-en-Uno (Más Rápido y Fácil)
+Tanto en **Linux / Debian Server** como en **Windows**, puede ejecutar el menú interactivo que automatiza el inicio de los servicios, la verificación de salud y la ejecución de cada cliente:
+
+* **En Linux / Debian Server / macOS:**
+  ```bash
+  ./run.sh
+  ```
+* **En Windows (PowerShell / CMD / Doble clic):**
+  ```cmd
+  run.bat
+  ```
+
+---
+
+### Opción 2: Despliegue con Docker Compose
 Desde la raíz del proyecto, ejecute:
 
 ```bash
-docker-compose up --build
+docker compose up -d --build
+# O mediante el script: ./scripts/start_backend.sh
 ```
 
-Esto compilará las imágenes multi-etapa y levantará automáticamente los 6 servicios en sus respectivos puertos (`8081` a `8086`).
+Esto compilará las imágenes multi-etapa y levantará automáticamente los 6 servicios en sus respectivos puertos (`8081` a `8086`). Para detenerlos, ejecute `docker compose down` o `./scripts/stop_backend.sh`.
 
-### Opción B: Ejecución Local Independiente
+---
+
+### Opción 3: Ejecución Local Independiente
 Cada microservicio puede ejecutarse de forma nativa en su respectivo runtime:
 
 1. **Java (`backend/java`):**
@@ -148,9 +175,11 @@ Como parte de los requisitos de la práctica ("*Desarrollar aplicaciones cliente
 * **Características:** Selector de host para alternar entre `localhost` y la IP del servidor Debian, carrito de compras deslizable, notificaciones tipo Toast y **Live Network Protocol Inspector** integrado en el pie de página para inspeccionar cabeceras, latencia y payloads JSON/XML en tiempo real.
 * **Cómo ejecutarlo:**
   ```bash
-  # Simplemente abrir el archivo en cualquier navegador:
-  start clients/web-app/index.html
-  # O servirlo localmente con Python si se prefiere:
+  # Mediante script automatizado:
+  ./scripts/run_web.sh        # En Linux / Debian / macOS / Git Bash
+  scripts\run_web.bat         # En Windows CMD / PowerShell
+
+  # O directamente sirviéndolo con Python:
   python -m http.server 3000 --directory clients/web-app
   ```
 
@@ -162,8 +191,12 @@ Como parte de los requisitos de la práctica ("*Desarrollar aplicaciones cliente
 * **Características:** Pestañas para Facturación Electrónica SAT y Logística, selector dinámico de servidor remoto, visor de respuestas y terminal de depuración de protocolos con tiempos de respuesta.
 * **Cómo ejecutarlo:**
   ```bash
-  cd clients/desktop-app
-  dotnet run
+  # Mediante script automatizado:
+  ./scripts/run_desktop.sh    # En Linux / Debian (valida compilación) o WSLg / Windows
+  scripts\run_desktop.bat     # En Windows CMD / PowerShell
+
+  # O directamente con dotnet CLI:
+  dotnet run --project clients/desktop-app/DesktopApp.csproj
   ```
 
 ### 3. Cliente de Terminal / CLI (`clients/cli-tool/`)
@@ -174,10 +207,12 @@ Como parte de los requisitos de la práctica ("*Desarrollar aplicaciones cliente
 * **Características:** Menú interactivo guiado por consola con colores ANSI o modo directo por flags de línea de comandos (`--service`, `--accion`, `--mensaje`), soporte dinámico para `--host` (apuntando al servidor Debian).
 * **Cómo ejecutarlo:**
   ```bash
-  # Modo interactivo (asistente de consola):
-  python clients/cli-tool/cli.py --host http://TU_IP_DEBIAN
+  # Mediante script automatizado (modo interactivo):
+  ./scripts/run_cli.sh        # En Linux / Debian
+  scripts\run_cli.bat         # En Windows
 
-  # Modo no interactivo (ejemplo de auditoría SOAP a VB.NET):
+  # O con parámetros directos apuntando a su servidor remoto:
+  ./scripts/run_cli.sh http://TU_IP_DEBIAN
   python clients/cli-tool/cli.py --host http://TU_IP_DEBIAN --service vbnet --soap --accion "DESPLIEGUE" --mensaje "Servicios actualizados"
   ```
 
