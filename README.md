@@ -39,37 +39,26 @@ practica-unidad-5/
 ├── README.md                      # Este manual general
 ├── backend/
 │   ├── java/                      # Módulo 1: Java Spring Boot 3 (Catálogo e Inventario)
-│   │   ├── Dockerfile
-│   │   ├── pom.xml
-│   │   └── src/main/...
 │   ├── python/                    # Módulo 2: Python FastAPI + Spyne (Envíos y Rutas)
-│   │   ├── Dockerfile
-│   │   ├── requirements.txt
-│   │   └── app/...
 │   ├── php/                       # Módulo 3: PHP Slim 4 + SQLite (Gestión de Órdenes)
-│   │   ├── Dockerfile
-│   │   ├── composer.json
-│   │   ├── public/index.php
-│   │   └── src/...
 │   ├── ruby/                      # Módulo 4: Ruby Sinatra + Puma (Notificaciones)
-│   │   ├── Dockerfile
-│   │   ├── Gemfile
-│   │   ├── app.rb
-│   │   └── wsdl/...
 │   ├── csharp/                    # Módulo 5: C# ASP.NET Core + CoreWCF (Facturación)
-│   │   ├── Dockerfile
-│   │   ├── FacturacionApi.csproj
-│   │   ├── Program.cs
-│   │   ├── Controllers/...
-│   │   └── Soap/...
 │   ├── vbnet/                     # Módulo 6: VB.NET ASP.NET Core + CoreWCF (Auditoría)
-│   │   ├── Dockerfile
-│   │   ├── AuditoriaApi.vbproj
-│   │   ├── Program.vb
-│   │   ├── Controllers/...
-│   │   └── Soap/...
 │   └── shared/                    # Bibliotecas compartidas de interoperabilidad
-│       └── WcfHelper/
+├── clients/                       # Aplicaciones Cliente Heterogéneas (Multiplataforma)
+│   ├── web-app/                   # Cliente 1: Web SPA (HTML5, Vanilla CSS Glassmorphism, JS ES6+)
+│   │   ├── index.html             # Tienda en línea con carrito, inspector de red y cotizador
+│   │   ├── styles.css             # Sistema de diseño responsivo y moderno
+│   │   ├── app.js                 # Consumidor REST (Java, PHP) y SOAP (Java, PHP, Python)
+│   │   └── README.md
+│   ├── desktop-app/               # Cliente 2: Escritorio WinForms (.NET 9 C#)
+│   │   ├── DesktopApp.csproj
+│   │   ├── MainForm.cs            # Timbrado SAT, tracking logístico y monitor de tráfico
+│   │   ├── Program.cs
+│   │   └── README.md
+│   └── cli-tool/                  # Cliente 3: Terminal / Consola CLI (Python 3)
+│   │   ├── cli.py                 # Despacho de alertas (Ruby) y registro de auditoría (VB.NET)
+│   │   └── README.md
 └── docs/
     ├── ARCHITECTURE.md            # Justificación de diseño, diagramas y análisis SL vs Propietario
     ├── API_REFERENCE.md           # Catálogo detallado de todos los endpoints REST y ejemplos curl
@@ -125,7 +114,76 @@ Cada microservicio puede ejecutarse de forma nativa en su respectivo runtime:
 
 ---
 
-## 5. Pruebas y Validación del Sistema
+## 5. Aplicaciones Cliente Multiplataforma (Web, Desktop, CLI)
+
+Como parte de los requisitos de la práctica ("*Desarrollar aplicaciones cliente capaces de consumir las APIs mediante solicitudes HTTP y/o clientes SOAP*"), se implementaron tres aplicaciones cliente en plataformas y lenguajes totalmente distintos, asegurando una cobertura completa de los 6 microservicios del ecosistema:
+
+```
+                                  ┌──────────────────────────┐
+                                  │      BACKEND ECOSYSTEM    │
+                                  ├──────────────────────────┤
+  ┌─────────────────────────┐     │  Java (:8081)            │
+  │   1. Web SPA Client     │────▶│    REST / SOAP             │
+  │ (HTML5/Vanilla CSS/JS)  │────▶│  PHP (:8083)             │
+  └─────────────────────────┘     │    REST / SOAP             │
+                                  │                          │
+  ┌─────────────────────────┐     │  Python (:8082)          │
+  │  2. Desktop WinForms    │────▶│    REST / SOAP             │
+  │      (.NET 9 C#)        │────▶│  C# (.NET 9) (:8085)     │
+  └─────────────────────────┘     │    REST / SOAP             │
+                                  │                          │
+  ┌─────────────────────────┐     │  Ruby (:8084)            │
+  │    3. Terminal / CLI    │────▶│    REST / SOAP             │
+  │       (Python 3)        │────▶│  VB.NET (:8086)          │
+  └─────────────────────────┘     │    REST / SOAP             │
+                                  └──────────────────────────┘
+```
+
+### 1. Cliente Web (`clients/web-app/`)
+* **Tecnología:** HTML5 semántico, Vanilla CSS (diseño responsivo dark glassmorphism con tipografías Google Fonts `Outfit`, `Inter` y `JetBrains Mono`), JavaScript ES6+ asíncrono (`fetch`).
+* **Servicios Consumidos:**
+  * **Java Spring Boot (:8081):** REST (`GET /api/v1/productos`) para renderizar el catálogo reactivo; SOAP (`POST /ws`, `ConsultarStockRequest`) para verificar existencias en almacén en tiempo real.
+  * **PHP Slim 4 (:8083):** REST (`POST /api/v1/ordenes`) para registrar pedidos; SOAP (`POST /soap/ordenes`, `ValidarEstadoOrden`) para validación de estado de órdenes.
+  * **Python FastAPI / Spyne (:8082):** SOAP (`POST /soap/envios`, `CalcularTarifa`) para el cotizador interactivo de envíos.
+* **Características:** Selector de host para alternar entre `localhost` y la IP del servidor Debian, carrito de compras deslizable, notificaciones tipo Toast y **Live Network Protocol Inspector** integrado en el pie de página para inspeccionar cabeceras, latencia y payloads JSON/XML en tiempo real.
+* **Cómo ejecutarlo:**
+  ```bash
+  # Simplemente abrir el archivo en cualquier navegador:
+  start clients/web-app/index.html
+  # O servirlo localmente con Python si se prefiere:
+  python -m http.server 3000 --directory clients/web-app
+  ```
+
+### 2. Cliente de Escritorio (`clients/desktop-app/`)
+* **Tecnología:** C# con .NET 9 WinForms (`net9.0-windows`), `HttpClient` nativo y `System.Xml.Linq` (LINQ to XML).
+* **Servicios Consumidos:**
+  * **C# ASP.NET Core / CoreWCF (:8085):** SOAP (`POST /soap/FacturacionService.svc`, `TimbrarComprobante`) con construcción de XML estructurado y timbrado fiscal; REST (`GET /api/v1/facturas`) con mapeo en `DataGridView`.
+  * **Python FastAPI / Spyne (:8082):** SOAP (`POST /soap/envios`, `CalcularTarifa`) para cotización de fletes; REST (`GET /api/v1/envios/{guia}`) para rastreo de guías logísticas.
+* **Características:** Pestañas para Facturación Electrónica SAT y Logística, selector dinámico de servidor remoto, visor de respuestas y terminal de depuración de protocolos con tiempos de respuesta.
+* **Cómo ejecutarlo:**
+  ```bash
+  cd clients/desktop-app
+  dotnet run
+  ```
+
+### 3. Cliente de Terminal / CLI (`clients/cli-tool/`)
+* **Tecnología:** Python 3 nativo utilizando únicamente la biblioteca estándar (`urllib.request`, `xml.etree.ElementTree`, `json`, `argparse`). **Cero dependencias externas (`pip install` no requerido)**.
+* **Servicios Consumidos:**
+  * **Ruby Sinatra (:8084):** REST (`GET /api/v1/destinatarios`) para consultar destinatarios de alertas; SOAP (`POST /soap/notificaciones`, `DespacharAlertaCritica`) para emitir alertas de incidentes con autenticación Basic Auth.
+  * **VB.NET ASP.NET Core / CoreWCF (:8086):** REST (`GET /api/v1/logs`) para consultar bitácoras de auditoría; SOAP (`POST /soap/AuditoriaService.svc`, `RegistrarEvento`) para asentar entradas de trazabilidad y seguridad.
+* **Características:** Menú interactivo guiado por consola con colores ANSI o modo directo por flags de línea de comandos (`--service`, `--accion`, `--mensaje`), soporte dinámico para `--host` (apuntando al servidor Debian).
+* **Cómo ejecutarlo:**
+  ```bash
+  # Modo interactivo (asistente de consola):
+  python clients/cli-tool/cli.py --host http://TU_IP_DEBIAN
+
+  # Modo no interactivo (ejemplo de auditoría SOAP a VB.NET):
+  python clients/cli-tool/cli.py --host http://TU_IP_DEBIAN --service vbnet --soap --accion "DESPLIEGUE" --mensaje "Servicios actualizados"
+  ```
+
+---
+
+## 6. Pruebas y Validación del Sistema
 
 ### 1. Consola Web Interactiva (Dashboard)
 Abra el archivo `docs/index.html` en cualquier navegador web (Chrome, Edge, Firefox). Esta interfaz gráfica le permite:
@@ -155,7 +213,7 @@ En entornos Windows:
 
 ---
 
-## 6. Autenticación y Credenciales
+## 7. Autenticación y Credenciales
 
 ### REST
 - Encabezado: `Authorization: Bearer test_token_2026`

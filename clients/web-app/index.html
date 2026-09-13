@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Aplicación cliente web para la práctica de Programación en Ambiente Cliente-Servidor. Consume APIs RESTful y servicios SOAP en tiempo real sobre una arquitectura de microservicios distribuidos." />
+  <title>EcoLogistics Store - Cliente Web Distribuido (REST & SOAP)</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- Encabezado con Configuración de Servidor Remoto -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-info">
+          <h1>EcoLogistics Store</h1>
+          <p>Cliente Web Multiplataforma • REST & SOAP</p>
+        </div>
+      </div>
+
+      <!-- Barra de Configuración de Host / IP del Servidor -->
+      <div class="host-config-bar">
+        <label for="hostInput">Servidor:</label>
+        <input type="text" id="hostInput" class="host-input" value="http://localhost" placeholder="http://192.168.1.XX" />
+        <button id="btnTestHost" class="btn-test-host" onclick="testServerConnection()">Probar Conexión</button>
+        <span id="hostStatusDot" style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#94a3b8;" title="Sin probar"></span>
+      </div>
+
+      <!-- Botón del Carrito -->
+      <button id="btnCartToggle" class="btn-cart-toggle" onclick="toggleCartDrawer()">
+        <span>🛒 Carrito</span>
+        <span id="cartCountBadge" class="cart-badge">0</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Contenedor Principal -->
+  <main class="main-content">
+
+    <!-- Hero Banner Educativo -->
+    <section class="hero-banner">
+      <div class="hero-text">
+        <h2>Catálogo de Comercio Electrónico Distribuido</h2>
+        <p>
+          Esta aplicación web consume simultáneamente servicios <strong>REST (JSON)</strong> y <strong>SOAP (XML/WSDL)</strong> desde el backend en Debian.
+          El catálogo consulta a <strong>Java (:8081)</strong>, las órdenes a <strong>PHP (:8083)</strong> y las cotizaciones logísticas a <strong>Python (:8082)</strong>.
+        </p>
+        <div class="protocols-legend">
+          <span class="badge-protocol badge-rest">● REST API (JSON)</span>
+          <span class="badge-protocol badge-soap">● SOAP Service (XML/WSDL)</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Barra de Herramientas: Búsqueda y Filtros -->
+    <section class="catalog-toolbar">
+      <div class="category-tabs" id="categoryTabs">
+        <button class="tab-btn active" data-category="ALL" onclick="filterCategory('ALL')">Todos</button>
+        <button class="tab-btn" data-category="Computadoras" onclick="filterCategory('Computadoras')">Computadoras</button>
+        <button class="tab-btn" data-category="Periféricos" onclick="filterCategory('Periféricos')">Periféricos</button>
+        <button class="tab-btn" data-category="Audio" onclick="filterCategory('Audio')">Audio</button>
+      </div>
+
+      <div style="display:flex; gap:0.5rem; align-items:center;">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" class="search-input" placeholder="Buscar por SKU o nombre..." oninput="handleSearch()" />
+        </div>
+        <button id="btnRefreshCatalog" class="btn-test-host" style="height:38px;" onclick="loadCatalog()" title="Recargar catálogo">↻ Recargar</button>
+      </div>
+    </section>
+
+    <!-- Cuadrícula de Productos -->
+    <section id="productsGrid" class="products-grid">
+      <div style="grid-column: 1/-1; text-align:center; padding:3rem; color:var(--text-muted);">
+        Cargando catálogo desde microservicio Java (:8081)...
+      </div>
+    </section>
+
+    <!-- Sección de Cotizador de Envíos (SOAP Python :8082) -->
+    <section style="background:var(--bg-card); backdrop-filter:blur(16px); border:1px solid var(--bg-glass-border); border-radius:var(--radius-lg); padding:2rem; margin-top:2rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap; gap:1rem;">
+        <div>
+          <h3 style="font-family:var(--font-heading); font-size:1.35rem; font-weight:700;">📦 Cotizador de Envíos en Tiempo Real</h3>
+          <p style="font-size:0.85rem; color:var(--text-muted);">Invocación remota del microservicio <strong>SOAP en Python (:8082)</strong> mediante la operación <code>CalcularTarifa</code>.</p>
+        </div>
+        <span class="badge-protocol badge-soap">SOAP XML WSDL</span>
+      </div>
+
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; align-items:end;">
+        <div>
+          <label style="display:block; font-size:0.8rem; font-weight:600; color:var(--text-muted); margin-bottom:0.35rem;">Origen:</label>
+          <input type="text" id="shipOrigen" class="search-input" value="CDMX Centro" />
+        </div>
+        <div>
+          <label style="display:block; font-size:0.8rem; font-weight:600; color:var(--text-muted); margin-bottom:0.35rem;">Destino:</label>
+          <select id="shipDestino" class="search-input" style="background:#0a0e1a;">
+            <option value="Guadalajara Jalisco">Guadalajara Jalisco</option>
+            <option value="Monterrey Nuevo León">Monterrey Nuevo León</option>
+            <option value="Mérida Yucatán">Mérida Yucatán</option>
+            <option value="Puebla Centro">Puebla Centro</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block; font-size:0.8rem; font-weight:600; color:var(--text-muted); margin-bottom:0.35rem;">Peso (Kg):</label>
+          <input type="number" id="shipPeso" class="search-input" value="2.5" step="0.5" min="0.5" />
+        </div>
+        <div>
+          <label style="display:block; font-size:0.8rem; font-weight:600; color:var(--text-muted); margin-bottom:0.35rem;">Servicio:</label>
+          <select id="shipServicio" class="search-input" style="background:#0a0e1a;">
+            <option value="EXPRESS">Express (1 día)</option>
+            <option value="ESTANDAR">Estándar (3 días)</option>
+            <option value="ECONOMICO">Económico (5 días)</option>
+          </select>
+        </div>
+        <div>
+          <button class="btn-action btn-add-cart" style="width:100%; height:42px;" onclick="calculateShippingRate()">Cotizar con SOAP</button>
+        </div>
+      </div>
+
+      <div id="shippingResultBox" style="margin-top:1.25rem; display:none; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius-md); padding:1rem;">
+        <!-- Resultado dinámico de tarifa -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Drawer Lateral: Carrito y Checkout -->
+  <div id="drawerBackdrop" class="drawer-backdrop" onclick="toggleCartDrawer()"></div>
+
+  <aside id="cartDrawer" class="cart-drawer">
+    <div class="drawer-header">
+      <h3>Carrito de Compras</h3>
+      <button class="btn-close-drawer" onclick="toggleCartDrawer()">✕</button>
+    </div>
+
+    <div id="cartBody" class="drawer-body">
+      <!-- Items renderizados dinámicamente -->
+    </div>
+
+    <div class="drawer-footer">
+      <div class="order-summary-row">
+        <span>Subtotal:</span>
+        <span id="cartSubtotal">$0.00 USD</span>
+      </div>
+      <div class="order-summary-row">
+        <span>IVA (16%):</span>
+        <span id="cartIva">$0.00 USD</span>
+      </div>
+      <div class="order-summary-row total">
+        <span>Total a Pagar:</span>
+        <span id="cartTotal">$0.00 USD</span>
+      </div>
+
+      <!-- Datos del Cliente -->
+      <div style="margin-top:1rem; display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+        <input type="text" id="custName" class="search-input" style="font-size:0.8rem;" placeholder="Nombre del Cliente" value="Laura Gómez Flores" />
+        <input type="email" id="custEmail" class="search-input" style="font-size:0.8rem;" placeholder="Email" value="laura.gomez@example.com" />
+      </div>
+
+      <button id="btnCreateOrder" class="btn-checkout" onclick="submitOrder()">
+        Generar Orden de Compra (REST :8083)
+      </button>
+
+      <div id="orderResultBox" style="margin-top:1rem; font-size:0.8rem; display:none;"></div>
+    </div>
+  </aside>
+
+  <!-- Inspector de Protocolos en Tiempo Real (Barra Inferior) -->
+  <aside id="protocolInspector" class="protocol-inspector">
+    <div class="inspector-header" onclick="toggleInspector()">
+      <div class="inspector-title">
+        <span style="color:#60a5fa;">⚡</span>
+        <span>Inspector de Red Distribuida (HTTP / REST / SOAP)</span>
+        <span id="inspectorLastStatus" style="margin-left:0.5rem; font-size:0.75rem; color:#94a3b8;">// Listo</span>
+      </div>
+      <span id="inspectorToggleIcon" style="color:var(--text-muted);">▲ Abrir Inspector</span>
+    </div>
+
+    <div class="inspector-content">
+      <div class="inspector-grid">
+        <div>
+          <div class="box-title">Petición Saliente (Request):</div>
+          <div id="inspectorReqBox" class="code-box">// Esperando interacción del usuario...</div>
+        </div>
+        <div>
+          <div class="box-title">Respuesta Entrante (Response):</div>
+          <div id="inspectorRespBox" class="code-box">// Los datos en crudo (JSON o XML) se desplegarán aquí...</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Contenedor para Notificaciones Toast -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Lógica Cliente JavaScript -->
+  <script src="app.js"></script>
+</body>
+</html>
