@@ -435,7 +435,8 @@ async function submitOrder() {
     const createdOrder = data;
     showToast('success', `¡Orden ${createdOrder.id} generada exitosamente en PHP SQLite!`);
 
-    // Notificar y auditar en segundo plano a los otros microservicios (VB.NET y Ruby)
+    // Notificar, auditar y generar guía logística en segundo plano (Python, VB.NET, Ruby)
+    createShippingWaybill(createdOrder, custName, custEmail);
     logOrderToVbNet(createdOrder, custName, custEmail);
     notifyOrderToRuby(createdOrder, custName, custEmail);
 
@@ -447,6 +448,10 @@ async function submitOrder() {
         <p style="color:var(--text-muted); font-size:0.75rem; margin-bottom:0.5rem;">
           Estado: <strong>${createdOrder.estado}</strong> | Total: $${parseFloat(createdOrder.total).toFixed(2)} USD
         </p>
+        <div style="background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.3); border-radius:6px; padding:0.6rem; margin-bottom:0.75rem;">
+          <div style="color:#38bdf8; font-weight:700; font-size:0.82rem;">📦 Guía de Paquetería: <span id="guideDisplay-${createdOrder.id}">Generando en Python (:8082)...</span></div>
+          <div style="color:var(--text-muted); font-size:0.72rem; margin-top:2px;">Rastreable en tiempo real desde la App Desktop (Logística)</div>
+        </div>
         <div style="font-size:0.72rem; color:var(--text-secondary); margin-bottom:0.75rem; display:flex; flex-direction:column; gap:0.25rem;">
           <div>📡 <em>Auditado en VB.NET (:8086):</em> <span style="color:#10b981;">LOG REGISTRADO</span></div>
           <div>✉️ <em>Despachado en Ruby (:8084):</em> <span style="color:#10b981;">NOTIFICACIÓN ENVIADA</span></div>
@@ -535,6 +540,57 @@ async function validateOrderSoap(ordenId) {
     if (container) container.innerHTML = `<span style="color:#f87171;">Error SOAP: ${err.message}</span>`;
     showToast('error', `Fallo en SOAP PHP: ${err.message}`);
   }
+}
+
+// --- Generación Automática de Guía Logística en Python FastAPI (:8082) ---
+async function createShippingWaybill(order, custName, custEmail) {
+  const url = getServiceUrl(8082, '/api/v1/envios');
+  const shipPayload = {
+    remitente_nombre: 'Almacén Central EcoLogistics',
+    remitente_direccion: 'Av. Insurgentes Sur 1602, Benito Juárez, CDMX',
+    destinatario_nombre: custName || 'Cliente Mostrador',
+    destinatario_direccion: order.direccion_envio || 'Calle Hidalgo 45, Guadalajara, Jalisco',
+    peso_kg: 2.5,
+    tipo_servicio: 'EXPRESS',
+    descripcion_contenido: `Artículos del Pedido ${order.id}`
+  };
+
+  const startTime = performance.now();
+  try {
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': AUTH_TOKEN
+      },
+      body: JSON.stringify(shipPayload)
+    });
+    const latency = Math.round(performance.now() - startTime);
+    const data = await resp.json().catch(() => null);
+
+    logNetworkEvent({
+      protocol: 'REST (JSON)',
+      service: 'Python 3.12 / FastAPI Logística (:8082)',
+      method: 'POST',
+      url: url,
+      headers: { 'Content-Type': 'application/json', 'Authorization': AUTH_TOKEN },
+      body: shipPayload,
+      status: resp.status,
+      statusText: resp.statusText,
+      latency: latency,
+      response: data
+    });
+
+    if (resp.ok && data && data.numero_guia) {
+      showToast('info', `[Logística Python :8082] Guía generada: ${data.numero_guia}`);
+      const el = document.getElementById(`guideDisplay-${order.id}`);
+      if (el) el.textContent = data.numero_guia;
+      return data.numero_guia;
+    }
+  } catch (err) {
+    console.warn('Fallo al generar guía en Python:', err);
+  }
+  return null;
 }
 
 // --- Auditoría Automática en VB.NET CoreWCF (:8086) ---

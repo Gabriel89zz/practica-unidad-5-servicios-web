@@ -43,6 +43,8 @@ namespace EcoLogistics.DesktopApp
 
         private TextBox txtRastreoGuia = null!;
         private Button btnRastrearRest = null!;
+        private Button btnCargarUltimaGuia = null!;
+        private Button btnAvanzarEstado = null!;
         private RichTextBox rtbRastreoResultado = null!;
 
         // Tab 3: Monitor de Red
@@ -444,28 +446,58 @@ namespace EcoLogistics.DesktopApp
                 Padding = new Padding(12)
             };
 
-            Panel pnlRastreoTop = new Panel { Dock = DockStyle.Top, Height = 80 };
-            Label lblGuia = new Label { Text = "Número de Guía:", ForeColor = Color.FromArgb(148, 163, 184), Location = new Point(0, 5), AutoSize = true };
+            Panel pnlRastreoTop = new Panel { Dock = DockStyle.Top, Height = 105 };
+            Label lblGuia = new Label { Text = "Número de Guía:", ForeColor = Color.FromArgb(148, 163, 184), Location = new Point(0, 4), AutoSize = true };
             txtRastreoGuia = CreateTextBox("GUIA-2026-9081");
-            txtRastreoGuia.Location = new Point(0, 25);
-            txtRastreoGuia.Width = 280;
+            txtRastreoGuia.Location = new Point(0, 24);
+            txtRastreoGuia.Width = 220;
 
             btnRastrearRest = new Button
             {
-                Text = "🔍 Rastrear Envío (REST)",
-                Location = new Point(290, 23),
-                Width = 170,
-                Height = 30,
+                Text = "🔍 Rastrear",
+                Location = new Point(226, 23),
+                Width = 110,
+                Height = 28,
                 BackColor = Color.FromArgb(2, 132, 199),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Cursor = Cursors.Hand,
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold)
+            };
+            btnRastrearRest.FlatAppearance.BorderSize = 0;
+            btnRastrearRest.Click += async (s, e) => await RastrearGuiaRestAsync();
+
+            btnCargarUltimaGuia = new Button
+            {
+                Text = "📥 Cargar Guía Web",
+                Location = new Point(342, 23),
+                Width = 150,
+                Height = 28,
+                BackColor = Color.FromArgb(16, 185, 129),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Cursor = Cursors.Hand,
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold)
+            };
+            btnCargarUltimaGuia.FlatAppearance.BorderSize = 0;
+            btnCargarUltimaGuia.Click += async (s, e) => await CargarUltimaGuiaAsync();
+
+            btnAvanzarEstado = new Button
+            {
+                Text = "🚚 Avanzar Estado de Entrega (PUT :8082)",
+                Location = new Point(0, 60),
+                Width = 320,
+                Height = 32,
+                BackColor = Color.FromArgb(217, 119, 6),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Cursor = Cursors.Hand,
                 Font = new Font("Segoe UI", 9.5f, FontStyle.Bold)
             };
-            btnRastrearRest.FlatAppearance.BorderSize = 0;
-            btnRastrearRest.Click += async (s, e) => await RastrearGuiaRestAsync();
+            btnAvanzarEstado.FlatAppearance.BorderSize = 0;
+            btnAvanzarEstado.Click += async (s, e) => await AvanzarEstadoEnvioAsync();
 
-            pnlRastreoTop.Controls.AddRange(new Control[] { lblGuia, txtRastreoGuia, btnRastrearRest });
+            pnlRastreoTop.Controls.AddRange(new Control[] { lblGuia, txtRastreoGuia, btnRastrearRest, btnCargarUltimaGuia, btnAvanzarEstado });
 
             rtbRastreoResultado = new RichTextBox
             {
@@ -893,6 +925,166 @@ namespace EcoLogistics.DesktopApp
             finally
             {
                 btnRastrearRest.Enabled = true;
+            }
+        }
+
+        // 4b. Cargar Última Guía Generada en la Web (Python :8082)
+        private async Task CargarUltimaGuiaAsync()
+        {
+            btnCargarUltimaGuia.Enabled = false;
+            string url = GetCleanHost(8082, "/api/v1/envios");
+            Stopwatch sw = Stopwatch.StartNew();
+
+            try
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Get, url);
+                request.Headers.Add("Authorization", AUTH_TOKEN);
+
+                var response = await _httpClient.SendAsync(request);
+                sw.Stop();
+                string responseJson = await response.Content.ReadAsStringAsync();
+
+                LogNetwork("REST (JSON)", "GET", url, null, responseJson, (int)response.StatusCode, sw.ElapsedMilliseconds);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    using JsonDocument doc = JsonDocument.Parse(responseJson);
+                    string? ultimaGuia = null;
+                    string? ultimoDestino = null;
+                    string? ultimoEstado = null;
+
+                    foreach (var item in doc.RootElement.EnumerateArray())
+                    {
+                        ultimaGuia = GetJsonString(item, "numero_guia", "numeroGuia", "guia");
+                        ultimoDestino = GetJsonString(item, "destinatario_nombre", "destinatario", "Destino");
+                        ultimoEstado = GetJsonString(item, "estado", "Estado");
+                    }
+
+                    if (!string.IsNullOrEmpty(ultimaGuia))
+                    {
+                        txtRastreoGuia.Text = ultimaGuia;
+                        rtbRastreoResultado.Text = $"[OK] ¡Última guía cargada: {ultimaGuia}!\n" +
+                                                  $"Destinatario : {ultimoDestino}\n" +
+                                                  $"Estado actual: {ultimoEstado}\n\n" +
+                                                  "Consultando bitácora completa...";
+                        await RastrearGuiaRestAsync();
+                    }
+                    else
+                    {
+                        MessageBox.Show("No se encontraron envíos registrados en Python (:8082).\nCree un pedido en la Web App para que se genere su guía automáticamente.", "Sin Envíos", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show($"Error HTTP {(int)response.StatusCode} al consultar envíos en Python: {responseJson}", "Error REST", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al conectar con el microservicio Python (:8082): " + ex.Message, "Error de Conexión", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                btnCargarUltimaGuia.Enabled = true;
+            }
+        }
+
+        // 4c. Avanzar Estado Logístico del Paquete (PUT Python :8082)
+        private async Task AvanzarEstadoEnvioAsync()
+        {
+            string guia = txtRastreoGuia.Text.Trim();
+            if (string.IsNullOrEmpty(guia))
+            {
+                MessageBox.Show("Ingrese un número de guía o presione '📥 Cargar Guía Web' primero.", "Guía Requerida", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            btnAvanzarEstado.Enabled = false;
+            string getUrl = GetCleanHost(8082, $"/api/v1/envios/{guia}");
+            Stopwatch sw = Stopwatch.StartNew();
+
+            try
+            {
+                using var getReq = new HttpRequestMessage(HttpMethod.Get, getUrl);
+                getReq.Headers.Add("Authorization", AUTH_TOKEN);
+                var getResp = await _httpClient.SendAsync(getReq);
+
+                if (!getResp.IsSuccessStatusCode)
+                {
+                    MessageBox.Show($"No se encontró la guía '{guia}' en Python (:8082).", "Guía No Encontrada", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                string getJson = await getResp.Content.ReadAsStringAsync();
+                using JsonDocument doc = JsonDocument.Parse(getJson);
+                string estadoActual = GetJsonString(doc.RootElement, "estado", "Estado").ToUpper();
+
+                string nuevoEstado;
+                string ubicacion;
+                string comentario;
+
+                switch (estadoActual)
+                {
+                    case "PREPARACION":
+                        nuevoEstado = "EN_TRANSITO";
+                        ubicacion = "Centro de Distribución Bajío - Silao";
+                        comentario = "Paquete clasificado y despachado en tractocamión ruta principal.";
+                        break;
+                    case "EN_TRANSITO":
+                        nuevoEstado = "EN_REPARTO";
+                        ubicacion = "Unidad Móvil de Entrega Urbana #42";
+                        comentario = "Paquete cargado en vehículo de última milla. En ruta hacia destino.";
+                        break;
+                    case "EN_REPARTO":
+                        nuevoEstado = "ENTREGADO";
+                        ubicacion = "Domicilio del Destinatario";
+                        comentario = "Paquete entregado al cliente satisfecho. Firma y sello digital registrados.";
+                        break;
+                    case "ENTREGADO":
+                        MessageBox.Show($"El paquete '{guia}' ya se encuentra en su estado final 'ENTREGADO'.", "Entrega Completada", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        return;
+                    default:
+                        nuevoEstado = "EN_TRANSITO";
+                        ubicacion = "Hub Logístico Regional";
+                        comentario = $"Estado actualizado desde {estadoActual}.";
+                        break;
+                }
+
+                string putUrl = GetCleanHost(8082, $"/api/v1/envios/{guia}/estado");
+                var payloadObj = new
+                {
+                    nuevo_estado = nuevoEstado,
+                    ubicacion_actual = ubicacion,
+                    comentario = comentario
+                };
+                string jsonBody = JsonSerializer.Serialize(payloadObj);
+
+                using var putReq = new HttpRequestMessage(HttpMethod.Put, putUrl);
+                putReq.Headers.Add("Authorization", AUTH_TOKEN);
+                putReq.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+
+                var putResp = await _httpClient.SendAsync(putReq);
+                sw.Stop();
+                string putRespJson = await putResp.Content.ReadAsStringAsync();
+
+                LogNetwork("REST (JSON)", "PUT", putUrl, jsonBody, putRespJson, (int)putResp.StatusCode, sw.ElapsedMilliseconds);
+
+                if (putResp.IsSuccessStatusCode)
+                {
+                    await RastrearGuiaRestAsync();
+                }
+                else
+                {
+                    MessageBox.Show($"Error HTTP {(int)putResp.StatusCode} al actualizar estado: {putRespJson}", "Error REST", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al actualizar estado del envío en Python (:8082): " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                btnAvanzarEstado.Enabled = true;
             }
         }
 

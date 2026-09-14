@@ -237,7 +237,49 @@ def cmd_consultar_inventario_java(host: str):
     else:
         print(f"{Color.RED}[FAIL] Error HTTP {status} ({latency} ms): {content}{Color.RESET}")
 
-# --- 5. Menú Interactivo ---
+# --- 5. Operaciones Python (:8082) - Logística y Envíos ---
+
+def cmd_consultar_envios_python(host: str):
+    url = get_base_url(host, 8082, "/api/v1/envios")
+    print(f"{Color.BLUE}[*] Consultando Envíos y Guías REST en Python FastAPI (:8082): {url}...{Color.RESET}")
+    
+    status, content, latency, err = http_request(url, method="GET", headers={"Authorization": AUTH_TOKEN})
+    if status == 200:
+        data = json.loads(content)
+        print(f"{Color.GREEN}[OK] HTTP 200 OK ({latency} ms) - {len(data)} Envíos Registrados:{Color.RESET}\n")
+        print(f"{Color.BOLD}{'NÚMERO GUÍA':<18} {'ESTADO':<14} {'DESTINATARIO':<24} {'SERVICIO':<10} {'COSTO':<10} {'ENTREGA':<12}{Color.RESET}")
+        print("-" * 92)
+        for e in data:
+            costo_val = f"${float(e.get('costo_envio', 0)):.2f}"
+            print(f"{e.get('numero_guia',''):<18} {e.get('estado',''):<14} {e.get('destinatario_nombre',''):<24} {e.get('tipo_servicio',''):<10} {costo_val:<10} {e.get('fecha_entrega_estimada',''):<12}")
+        print("-" * 92)
+    else:
+        print(f"{Color.RED}[FAIL] Error HTTP {status} ({latency} ms): {content}{Color.RESET}")
+
+# --- 6. Operaciones C# (:8085) - Facturación Electrónica SAT ---
+
+def cmd_consultar_facturas_csharp(host: str):
+    url = get_base_url(host, 8085, "/api/v1/facturas")
+    print(f"{Color.BLUE}[*] Consultando Facturas Emitidas REST en C# ASP.NET Core (:8085): {url}...{Color.RESET}")
+    
+    status, content, latency, err = http_request(url, method="GET", headers={"Authorization": AUTH_TOKEN})
+    if status == 200:
+        data = json.loads(content)
+        print(f"{Color.GREEN}[OK] HTTP 200 OK ({latency} ms) - {len(data)} Comprobantes Fiscales Registrados:{Color.RESET}\n")
+        print(f"{Color.BOLD}{'FOLIO':<14} {'FOLIO FISCAL UUID':<38} {'RECEPTOR':<16} {'TOTAL':<12} {'ESTATUS':<12}{Color.RESET}")
+        print("-" * 96)
+        for f in data:
+            folio = f.get('folio') or f.get('Folio') or f.get('id') or ''
+            uuid_val = f.get('folioFiscalUUID') or f.get('FolioFiscalUUID') or f.get('folio_fiscal_uuid') or 'N/A'
+            rfc = f.get('rfcCliente') or f.get('RfcCliente') or f.get('rfc_receptor') or ''
+            total = f"${float(f.get('total') or f.get('Total') or 0):.2f}"
+            estatus = f.get('estatus') or f.get('Estatus') or 'TIMBRADA'
+            print(f"{folio:<14} {uuid_val:<38} {rfc:<16} {total:<12} {estatus:<12}")
+        print("-" * 96)
+    else:
+        print(f"{Color.RED}[FAIL] Error HTTP {status} ({latency} ms): {content}{Color.RESET}")
+
+# --- 7. Menú Interactivo ---
 
 def run_interactive_menu(host: str):
     while True:
@@ -250,11 +292,13 @@ def run_interactive_menu(host: str):
         print("   4. [SOAP]  Registrar Evento de Seguridad en Auditoría (VB.NET :8086)")
         print(f"   5. [REST]  {Color.BOLD}Consultar Órdenes de Compra Creadas en la Web (PHP :8083){Color.RESET}")
         print(f"   6. [REST]  {Color.BOLD}Consultar Catálogo y Existencias de Inventario (Java :8081){Color.RESET}")
-        print("   7. [CONFIG] Cambiar Host / IP del Servidor")
+        print(f"   7. [REST]  {Color.BOLD}Consultar Envíos y Guías de Paquetería (Python :8082){Color.RESET}")
+        print(f"   8. [REST]  {Color.BOLD}Consultar Facturas Electrónicas SAT (C# :8085){Color.RESET}")
+        print("   9. [CONFIG] Cambiar Host / IP del Servidor")
         print("   0. Salir\n")
 
         try:
-            opcion = input(f"{Color.BOLD}Opción [0-7]: {Color.RESET}").strip()
+            opcion = input(f"{Color.BOLD}Opción [0-9]: {Color.RESET}").strip()
         except (KeyboardInterrupt, EOFError):
             print("\nSaliendo...")
             break
@@ -277,6 +321,10 @@ def run_interactive_menu(host: str):
         elif opcion == "6":
             cmd_consultar_inventario_java(host)
         elif opcion == "7":
+            cmd_consultar_envios_python(host)
+        elif opcion == "8":
+            cmd_consultar_facturas_csharp(host)
+        elif opcion == "9":
             new_host = input("Nueva dirección IP o Host (ej. http://192.168.1.50): ").strip()
             if new_host:
                 host = new_host
@@ -293,7 +341,7 @@ def run_interactive_menu(host: str):
 def main():
     parser = argparse.ArgumentParser(description="EcoLogistics CLI - Cliente de Terminal para Microservicios REST & SOAP")
     parser.add_argument("--host", default="http://localhost", help="Dirección base o IP del servidor (default: http://localhost)")
-    parser.add_argument("--service", choices=["destinatarios", "alerta", "logs", "evento", "ordenes", "inventario"], help="Ejecutar una operación directa")
+    parser.add_argument("--service", choices=["destinatarios", "alerta", "logs", "evento", "ordenes", "inventario", "envios", "facturas"], help="Ejecutar una operación directa")
     parser.add_argument("--mensaje", default="Alerta generada desde CLI", help="Mensaje para el despacho de alertas")
     parser.add_argument("--accion", default="AUDIT_EVENT", help="Acción para el registro de auditoría")
     args = parser.parse_args()
@@ -312,6 +360,10 @@ def main():
             cmd_listar_ordenes_php(args.host)
         elif args.service == "inventario":
             cmd_consultar_inventario_java(args.host)
+        elif args.service == "envios":
+            cmd_consultar_envios_python(args.host)
+        elif args.service == "facturas":
+            cmd_consultar_facturas_csharp(args.host)
     else:
         run_interactive_menu(args.host)
 
