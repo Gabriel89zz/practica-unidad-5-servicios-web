@@ -125,6 +125,26 @@
       </div>
     </section>
 
+    <!-- Sección de Rastreo de Paquetería en Vivo (REST Python :8082) -->
+    <section id="trackingSection" style="background:var(--bg-card); backdrop-filter:blur(16px); border:1px solid var(--bg-glass-border); border-radius:var(--radius-lg); padding:2rem; margin-top:2rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap; gap:1rem;">
+        <div>
+          <h3 style="font-family:var(--font-heading); font-size:1.35rem; font-weight:700;">🔍 Rastreador de Paquetería en Tiempo Real</h3>
+          <p style="font-size:0.85rem; color:var(--text-muted);">Consulta de bitácora y estado de entrega en el microservicio <strong>REST en Python (:8082)</strong>.</p>
+        </div>
+        <span class="badge-protocol badge-rest">REST API (JSON)</span>
+      </div>
+
+      <div style="display:flex; gap:0.75rem; align-items:center; max-width:600px;">
+        <input type="text" id="webTrackGuia" class="search-input" placeholder="Ej. GUIA-2026-9081" value="GUIA-2026-9081" style="font-family:monospace; font-size:1rem;" />
+        <button class="btn-action btn-add-cart" style="width:180px; height:42px; font-weight:700;" onclick="trackShipmentWeb()">Rastrear Guía</button>
+      </div>
+
+      <div id="webTrackResultBox" style="margin-top:1.25rem; display:none; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius-md); padding:1.25rem;">
+        <!-- Resultado dinámico de rastreo -->
+      </div>
+    </section>
+
   </main>
 
   <!-- Drawer Lateral: Carrito y Checkout -->

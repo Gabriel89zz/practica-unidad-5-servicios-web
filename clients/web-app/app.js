@@ -584,13 +584,121 @@ async function createShippingWaybill(order, custName, custEmail) {
     if (resp.ok && data && data.numero_guia) {
       showToast('info', `[Logística Python :8082] Guía generada: ${data.numero_guia}`);
       const el = document.getElementById(`guideDisplay-${order.id}`);
-      if (el) el.textContent = data.numero_guia;
+      if (el) {
+        el.innerHTML = `<span style="color:#38bdf8; font-family:monospace; font-weight:700;">${data.numero_guia}</span> <button onclick="trackShipmentWeb('${data.numero_guia}')" style="margin-left:6px; background:#0284c7; color:#fff; border:none; border-radius:4px; padding:2px 8px; font-size:0.7rem; cursor:pointer; font-weight:600;">🔍 Rastrear en Vivo</button>`;
+      }
       return data.numero_guia;
     }
   } catch (err) {
     console.warn('Fallo al generar guía en Python:', err);
   }
   return null;
+}
+
+// --- Rastreo en Tiempo Real de Envíos en Python FastAPI (:8082) ---
+async function trackShipmentWeb(guiaOverride) {
+  const inputEl = document.getElementById('webTrackGuia');
+  const guia = (guiaOverride || (inputEl ? inputEl.value : '') || '').trim();
+  const resultBox = document.getElementById('webTrackResultBox');
+
+  if (!guia) {
+    showToast('error', 'Por favor ingrese un número de guía para rastrear.');
+    return;
+  }
+
+  if (inputEl && guiaOverride) {
+    inputEl.value = guiaOverride;
+  }
+
+  if (resultBox) {
+    resultBox.style.display = 'block';
+    resultBox.innerHTML = `<span style="color:#fbbf24;">Consultando bitácora de la guía ${escapeHtml(guia)} en Python (:8082)...</span>`;
+  }
+
+  // Scroll suave hacia la sección de rastreo
+  const section = document.getElementById('trackingSection');
+  if (section) {
+    section.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  const url = getServiceUrl(8082, `/api/v1/envios/${encodeURIComponent(guia)}`);
+  const startTime = performance.now();
+
+  try {
+    const resp = await fetch(url, {
+      method: 'GET',
+      headers: { 'Authorization': AUTH_TOKEN }
+    });
+    const latency = Math.round(performance.now() - startTime);
+    const data = await resp.json().catch(() => null);
+
+    logNetworkEvent({
+      protocol: 'REST (JSON)',
+      service: 'Python 3.12 / FastAPI Logística (:8082)',
+      method: 'GET',
+      url: url,
+      headers: { 'Authorization': AUTH_TOKEN },
+      status: resp.status,
+      statusText: resp.statusText,
+      latency: latency,
+      response: data
+    });
+
+    if (resp.ok && data) {
+      const estado = (data.estado || '').toUpperCase();
+      const estadoColor = estado === 'ENTREGADO' ? '#34d399' :
+                          estado === 'EN_REPARTO' ? '#38bdf8' :
+                          estado === 'EN_TRANSITO' ? '#fbbf24' : '#a855f7';
+
+      let eventsHtml = '';
+      if (Array.isArray(data.historial_eventos) && data.historial_eventos.length > 0) {
+        eventsHtml = data.historial_eventos.map((ev, idx) => `
+          <div style="display:flex; gap:1rem; align-items:flex-start; margin-bottom:0.75rem; padding-left:0.5rem; border-left:2px solid ${idx === data.historial_eventos.length - 1 ? estadoColor : '#334155'};">
+            <div style="color:#94a3b8; font-size:0.72rem; min-width:130px; font-family:monospace;">${escapeHtml((ev.timestamp || '').replace('T', ' ').substring(0, 19))}</div>
+            <div>
+              <span style="font-weight:700; color:${estadoColor}; font-size:0.8rem;">[${escapeHtml(ev.estado || '')}]</span>
+              <strong style="color:#f8fafc; font-size:0.82rem;"> ${escapeHtml(ev.ubicacion || '')}</strong>
+              <div style="color:var(--text-muted); font-size:0.75rem; margin-top:2px;">${escapeHtml(ev.descripcion || '')}</div>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        eventsHtml = '<div style="color:var(--text-muted); font-size:0.8rem;">No hay eventos registrados para esta guía.</div>';
+      }
+
+      if (resultBox) {
+        resultBox.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
+            <div>
+              <span style="font-size:1.1rem; font-weight:700; color:#fff;">Guía: <span style="color:#38bdf8; font-family:monospace;">${escapeHtml(data.numero_guia || '')}</span></span>
+              <div style="font-size:0.8rem; color:var(--text-muted);">Destinatario: <strong>${escapeHtml(data.destinatario_nombre || '')}</strong> (${escapeHtml(data.destinatario_direccion || '')})</div>
+            </div>
+            <div style="background:${estadoColor}22; border:1px solid ${estadoColor}88; color:${estadoColor}; font-weight:700; padding:0.35rem 0.8rem; border-radius:6px; font-size:0.85rem;">
+              ● ${escapeHtml(estado)}
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:0.75rem; margin-bottom:1.25rem; font-size:0.8rem; background:rgba(255,255,255,0.03); padding:0.75rem; border-radius:6px;">
+            <div><span style="color:var(--text-muted);">Servicio:</span> <strong>${escapeHtml(data.tipo_servicio || 'ESTANDAR')}</strong></div>
+            <div><span style="color:var(--text-muted);">Costo:</span> <strong>$${parseFloat(data.costo_envio || 0).toFixed(2)} MXN</strong></div>
+            <div><span style="color:var(--text-muted);">Entrega Estimada:</span> <strong>${escapeHtml(data.fecha_entrega_estimada || 'Pendiente')}</strong></div>
+          </div>
+          <h4 style="font-size:0.85rem; color:#94a3b8; margin-bottom:0.75rem; text-transform:uppercase; letter-spacing:0.05em;">Línea de Tiempo del Envío:</h4>
+          <div style="margin-top:0.5rem;">${eventsHtml}</div>
+        `;
+      }
+      showToast('success', `[Python :8082] Guía ${data.numero_guia} localizada (Estado: ${estado}).`);
+    } else {
+      if (resultBox) {
+        resultBox.innerHTML = `<span style="color:#f87171;">No se encontró la guía "${escapeHtml(guia)}" en el sistema logístico (HTTP ${resp.status}).</span>`;
+      }
+      showToast('error', `Guía ${guia} no localizada.`);
+    }
+  } catch (err) {
+    if (resultBox) {
+      resultBox.innerHTML = `<span style="color:#f87171;">Error al consultar guía en Python: ${err.message}</span>`;
+    }
+    showToast('error', `Error de red: ${err.message}`);
+  }
 }
 
 // --- Auditoría Automática en VB.NET CoreWCF (:8086) ---
