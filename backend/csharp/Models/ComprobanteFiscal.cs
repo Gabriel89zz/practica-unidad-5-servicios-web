@@ -95,4 +95,11 @@ namespace FacturacionApi.Models
         public string Concepto { get; set; } = string.Empty;
         public string MetodoPago { get; set; } = "PUE";
     }
+
+    public class ActualizarFacturaDto
+    {
+        public string? Concepto { get; set; }
+        public string? Estatus { get; set; }
+    }
 }
+

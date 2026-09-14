@@ -46,6 +46,27 @@ class NotificationStore
     end
   end
 
+  def actualizar_destinatario(id, datos)
+    @mutex.synchronize do
+      dest = @destinatarios.find { |d| d[:id] == id }
+      return nil unless dest
+      dest[:nombre] = datos['nombre'] if datos['nombre']
+      dest[:email] = datos['email'] if datos['email']
+      dest[:telefono] = datos['telefono'] if datos['telefono']
+      dest[:canal_preferido] = datos['canal_preferido'].upcase if datos['canal_preferido']
+      dest
+    end
+  end
+
+  def eliminar_destinatario(id)
+    @mutex.synchronize do
+      idx = @destinatarios.find_index { |d| d[:id] == id }
+      return false unless idx
+      @destinatarios.delete_at(idx)
+      true
+    end
+  end
+
   def listar_plantillas
     @mutex.synchronize { @plantillas.dup }
   end
@@ -164,6 +185,23 @@ post '/api/v1/destinatarios' do
   nuevo = STORE.agregar_destinatario(payload)
   status 201
   nuevo.to_json
+end
+
+put '/api/v1/destinatarios/:id' do
+  payload = JSON.parse(request.body.read) rescue {}
+  actualizado = STORE.actualizar_destinatario(params[:id], payload)
+  unless actualizado
+    halt 404, { error: 'Not Found', message: "Destinatario #{params[:id]} no encontrado", statusCode: 404 }.to_json
+  end
+  actualizado.to_json
+end
+
+delete '/api/v1/destinatarios/:id' do
+  eliminado = STORE.eliminar_destinatario(params[:id])
+  unless eliminado
+    halt 404, { error: 'Not Found', message: "Destinatario #{params[:id]} no encontrado", statusCode: 404 }.to_json
+  end
+  { message: "Destinatario #{params[:id]} eliminado correctamente", statusCode: 200 }.to_json
 end
 
 get '/api/v1/plantillas' do

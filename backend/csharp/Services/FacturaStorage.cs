@@ -139,5 +139,29 @@ namespace FacturacionApi.Services
             _comprobantes.TryGetValue(uuid.Trim().ToUpper(), out var c);
             return c;
         }
+
+        public bool CancelarFactura(string folio, out FacturaModel? facturaCancelada)
+        {
+            facturaCancelada = null;
+            if (_facturas.TryGetValue(folio.Trim().ToUpper(), out var f))
+            {
+                f.Estatus = "CANCELADA";
+                facturaCancelada = f;
+                return true;
+            }
+            return false;
+        }
+
+        public FacturaModel? ActualizarFactura(string folio, string? concepto, string? estatus)
+        {
+            if (_facturas.TryGetValue(folio.Trim().ToUpper(), out var f))
+            {
+                if (!string.IsNullOrWhiteSpace(concepto)) f.Concepto = concepto;
+                if (!string.IsNullOrWhiteSpace(estatus)) f.Estatus = estatus.ToUpper();
+                return f;
+            }
+            return null;
+        }
     }
 }
+

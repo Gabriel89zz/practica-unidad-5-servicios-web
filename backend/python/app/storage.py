@@ -99,4 +99,13 @@ class EnvioStorage:
             envio["historial_eventos"].append(evento)
             return envio
 
+    def eliminar_envio(self, guia: str) -> bool:
+        with self._lock:
+            g = guia.strip().upper()
+            if g in self._envios:
+                del self._envios[g]
+                return True
+            return False
+
 envio_storage = EnvioStorage()
+

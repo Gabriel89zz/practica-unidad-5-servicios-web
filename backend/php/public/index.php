@@ -200,6 +200,19 @@ $app->group('/api/v1/ordenes', function ($group) {
         return $response->withHeader('Content-Type', 'application/json');
     });
 
+    $group->put('/{id}', function (Request $request, Response $response, array $args) {
+        $data = (array)$request->getParsedBody();
+        $service = new OrderService();
+        $updated = $service->updateOrder($args['id'], $data);
+        if (!$updated) {
+            $err = ['error' => 'Not Found', 'message' => "Orden {$args['id']} no encontrada.", 'statusCode' => 404];
+            $response->getBody()->write(json_encode($err));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+        }
+        $response->getBody()->write(json_encode($updated));
+        return $response->withHeader('Content-Type', 'application/json');
+    });
+
     $group->delete('/{id}', function (Request $request, Response $response, array $args) {
         $service = new OrderService();
         $cancelled = $service->cancelOrder($args['id']);

@@ -82,5 +82,50 @@ namespace FacturacionApi.Controllers
             }
             return Ok(comp);
         }
+
+        [HttpPut("{folio}")]
+        [ProducesResponseType(typeof(FacturaModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public IActionResult ActualizarFactura(string folio, [FromBody] ActualizarFacturaDto dto)
+        {
+            var f = _storage.ActualizarFactura(folio, dto.Concepto, dto.Estatus);
+            if (f == null)
+            {
+                return NotFound(new
+                {
+                    error = "Not Found",
+                    message = $"Factura con folio '{folio}' no encontrada.",
+                    statusCode = 404
+                });
+            }
+            return Ok(f);
+        }
+
+        [HttpDelete("{folio}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public IActionResult CancelarFactura(string folio)
+        {
+            if (_storage.CancelarFactura(folio, out var cancelada))
+            {
+                return Ok(new
+                {
+                    message = $"Factura con folio '{folio}' cancelada exitosamente ante el SAT.",
+                    estatus = "CANCELADA",
+                    folioFiscalUUID = cancelada?.FolioFiscalUUID,
+                    statusCode = 200
+                });
+            }
+
+            return NotFound(new
+            {
+                error = "Not Found",
+                message = $"Factura con folio '{folio}' no encontrada.",
+                statusCode = 404
+            });
+        }
     }
 }
+

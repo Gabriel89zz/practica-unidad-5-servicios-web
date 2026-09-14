@@ -114,4 +114,26 @@ class OrderService {
         ]);
         return true;
     }
+
+    public function updateOrder(string $id, array $data): ?array {
+        $order = $this->getOrderById($id);
+        if (!$order) {
+            return null;
+        }
+
+        $estado = $data['estado'] ?? $order['estado'];
+        $direccion = $data['direccion_envio'] ?? $order['direccion_envio'];
+        $pagado = isset($data['pagado']) ? ($data['pagado'] ? 1 : 0) : ($order['pagado'] ? 1 : 0);
+
+        $stmt = $this->db->prepare("UPDATE orders SET estado = :estado, direccion_envio = :dir, pagado = :pag, fecha_actualizacion = :act WHERE id = :id");
+        $stmt->execute([
+            ':estado' => $estado,
+            ':dir' => $direccion,
+            ':pag' => $pagado,
+            ':act' => date('c'),
+            ':id' => $id
+        ]);
+        return $this->getOrderById($id);
+    }
 }
+

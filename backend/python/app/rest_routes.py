@@ -64,3 +64,21 @@ def actualizar_estado(numero_guia: str, datos: ActualizarEstadoRequest):
             }
         )
     return actualizado
+
+@router.delete("/{numero_guia}", summary="Cancelar o eliminar envío")
+def eliminar_envio(numero_guia: str):
+    """
+    Elimina o cancela una orden de envío del sistema logístico.
+    """
+    exito = envio_storage.eliminar_envio(numero_guia)
+    if not exito:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "error": "Not Found",
+                "message": f"No se encontró el envío con número de guía '{numero_guia}'",
+                "statusCode": 404
+            }
+        )
+    return {"message": f"Envío con guía '{numero_guia}' cancelado y eliminado correctamente.", "statusCode": 200}
+

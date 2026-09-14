@@ -1,0 +1,582 @@
+{
+  "info": {
+    "_postman_id": "9b079336-790f-49fe-97fe-79a8e81e7daa",
+    "name": "EcoLogistics Suite - Microservicios REST & SOAP Heterogéneos",
+    "description": "Colección completa de pruebas para los 6 microservicios distribuidos (Java :8081, Python :8082, PHP :8083, Ruby :8084, C# :8085, VB.NET :8086). Materia: Programación en Ambiente Cliente-Servidor (7.° Semestre).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_host",
+      "value": "http://192.168.1.176",
+      "type": "string"
+    },
+    {
+      "key": "bearer_token",
+      "value": "Bearer test_token_2026",
+      "type": "string"
+    },
+    {
+      "key": "api_key",
+      "value": "secret_key_cs",
+      "type": "string"
+    },
+    {
+      "key": "soap_basic_auth",
+      "value": "Basic YWRtaW46YWRtaW5fcGFzc18yMDI2",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Java 21 - Inventario & Catálogo (:8081)",
+      "item": [
+        {
+          "name": "REST - Listar Productos (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "{{bearer_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_host}}:8081/api/v1/productos",
+              "host": ["{{base_host}}"],
+              "port": "8081",
+              "path": ["api", "v1", "productos"]
+            }
+          }
+        },
+        {
+          "name": "REST - Crear Producto (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "{{bearer_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sku\": \"MON-4K-01\",\n  \"nombre\": \"Monitor Dell UltraSharp 27\",\n  \"descripcion\": \"Monitor 4K UHD IPS USB-C\",\n  \"precio\": 549.99,\n  \"stock\": 25,\n  \"categoria\": \"Periféricos\"\n}"
+            },
+            "url": {
+              "raw": "{{base_host}}:8081/api/v1/productos",
+              "host": ["{{base_host}}"],
+              "port": "8081",
+              "path": ["api", "v1", "productos"]
+            }
+          }
+        },
+        {
+          "name": "REST - Actualizar Producto (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "{{bearer_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Monitor Dell UltraSharp 27 Actualizado\",\n  \"descripcion\": \"Monitor 4K UHD IPS USB-C HDR400\",\n  \"precio\": 529.99,\n  \"stock\": 30,\n  \"categoria\": \"Periféricos\"\n}"
+            },
+            "url": {
+              "raw": "{{base_host}}:8081/api/v1/productos/1",
+              "host": ["{{base_host}}"],
+              "port": "8081",
+              "path": ["api", "v1", "productos", "1"]
+            }
+          }
+        },
+        {
+          "name": "REST - Eliminar Producto (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "{{bearer_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_host}}:8081/api/v1/productos/5",
+              "host": ["{{base_host}}"],
+              "port": "8081",
+              "path": ["api", "v1", "productos", "5"]
+            }
+          }
+        },
+        {
+          "name": "SOAP - Consultar Stock XML",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "text/xml; charset=utf-8" },
+              { "key": "Authorization", "value": "{{soap_basic_auth}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:inv=\"http://ecommerce.com/inventario\">\n  <soapenv:Header/>\n  <soapenv:Body>\n    <inv:ConsultarStockRequest>\n      <inv:sku>LAP-001</inv:sku>\n    </inv:ConsultarStockRequest>\n  </soapenv:Body>\n</soapenv:Envelope>"
+            },
+            "url": {
+              "raw": "{{base_host}}:8081/ws",
+              "host": ["{{base_host}}"],
+              "port": "8081",
+              "path": ["ws"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Python 3.12 - Logística & Envíos (:8082)",
+      "item": [
+        {
+          "name": "REST - Listar Envíos (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "{{bearer_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_host}}:8082/api/v1/envios",
+              "host": ["{{base_host}}"],
+              "port": "8082",
+              "path": ["api", "v1", "envios"]
+            }
+          }
+        },
+        {
+          "name": "REST - Crear Guía de Envío (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "{{bearer_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"remitente_nombre\": \"Almacén TechStore CDMX\",\n  \"remitente_direccion\": \"Av. Insurgentes Sur 1602, Benito Juárez, CDMX\",\n  \"destinatario_nombre\": \"Juan Pérez López\",\n  \"destinatario_direccion\": \"Calle Hidalgo 45, Guadalajara, Jalisco\",\n  \"peso_kg\": 2.8,\n  \"tipo_servicio\": \"EXPRESS\",\n  \"descripcion_contenido\": \"Laptop Dell y Mouse inalámbrico\"\n}"
+            },
+            "url": {
+              "raw": "{{base_host}}:8082/api/v1/envios",
+              "host": ["{{base_host}}"],
+              "port": "8082",
+              "path": ["api", "v1", "envios"]
+            }
+          }
+        },
+        {
+          "name": "REST - Avanzar Estado Logístico (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "{{bearer_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nuevo_estado\": \"EN_TRANSITO\",\n  \"ubicacion_actual\": \"Centro de Distribución Bajío - Silao\",\n  \"comentario\": \"Paquete despachado en tractocamión ruta principal.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_host}}:8082/api/v1/envios/GUIA-2026-9081/estado",
+              "host": ["{{base_host}}"],
+              "port": "8082",
+              "path": ["api", "v1", "envios", "GUIA-2026-9081", "estado"]
+            }
+          }
+        },
+        {
+          "name": "REST - Cancelar / Eliminar Envío (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "{{bearer_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_host}}:8082/api/v1/envios/GUIA-2026-9081",
+              "host": ["{{base_host}}"],
+              "port": "8082",
+              "path": ["api", "v1", "envios", "GUIA-2026-9081"]
+            }
+          }
+        },
+        {
+          "name": "SOAP - Cotizar Tarifa WSDL XML",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "text/xml; charset=utf-8" },
+              { "key": "Authorization", "value": "{{soap_basic_auth}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:env=\"http://ecommerce.com/envios\">\n  <soapenv:Header/>\n  <soapenv:Body>\n    <env:CalcularCostoEnvio>\n      <env:origen>CDMX Centro</env:origen>\n      <env:destino>Guadalajara Jalisco</env:destino>\n      <env:peso_kg>3.5</env:peso_kg>\n      <env:tipo_servicio>EXPRESS</env:tipo_servicio>\n    </env:CalcularCostoEnvio>\n  </soapenv:Body>\n</soapenv:Envelope>"
+            },
+            "url": {
+              "raw": "{{base_host}}:8082/soap/envios",
+              "host": ["{{base_host}}"],
+              "port": "8082",
+              "path": ["soap", "envios"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. PHP 8.2 - Órdenes de Compra (:8083)",
+      "item": [
+        {
+          "name": "REST - Listar Órdenes (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "{{bearer_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_host}}:8083/api/v1/ordenes",
+              "host": ["{{base_host}}"],
+              "port": "8083",
+              "path": ["api", "v1", "ordenes"]
+            }
+          }
+        },
+        {
+          "name": "REST - Crear Orden (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "{{bearer_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cliente_id\": \"CLI-2026-99\",\n  \"cliente_nombre\": \"Valeria Torres\",\n  \"cliente_email\": \"valeria.torres@example.com\",\n  \"direccion_envio\": \"Av. Universidad 1200, Benito Juárez, CDMX\",\n  \"metodo_pago\": \"TARJETA\",\n  \"items\": [\n    {\n      \"sku\": \"LAP-001\",\n      \"nombre\": \"Laptop Dell XPS 15\",\n      \"cantidad\": 1,\n      \"precio_unitario\": 1899.99\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_host}}:8083/api/v1/ordenes",
+              "host": ["{{base_host}}"],
+              "port": "8083",
+              "path": ["api", "v1", "ordenes"]
+            }
+          }
+        },
+        {
+          "name": "REST - Actualizar Orden (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "{{bearer_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"PROCESADA\",\n  \"pagado\": true,\n  \"direccion_envio\": \"Av. Universidad 1250, Piso 3, CDMX\"\n}"
+            },
+            "url": {
+              "raw": "{{base_host}}:8083/api/v1/ordenes/ORD-2026-101",
+              "host": ["{{base_host}}"],
+              "port": "8083",
+              "path": ["api", "v1", "ordenes", "ORD-2026-101"]
+            }
+          }
+        },
+        {
+          "name": "REST - Cancelar Orden (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "{{bearer_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_host}}:8083/api/v1/ordenes/ORD-2026-101",
+              "host": ["{{base_host}}"],
+              "port": "8083",
+              "path": ["api", "v1", "ordenes", "ORD-2026-101"]
+            }
+          }
+        },
+        {
+          "name": "SOAP - Validar Orden XML",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "text/xml; charset=utf-8" },
+              { "key": "Authorization", "value": "{{soap_basic_auth}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ord=\"http://ecommerce.com/ordenes\">\n  <soap:Header/>\n  <soap:Body>\n    <ord:ValidarEstadoOrden>\n      <ordenId>ORD-2026-101</ordenId>\n    </ord:ValidarEstadoOrden>\n  </soap:Body>\n</soap:Envelope>"
+            },
+            "url": {
+              "raw": "{{base_host}}:8083/soap/ordenes",
+              "host": ["{{base_host}}"],
+              "port": "8083",
+              "path": ["soap", "ordenes"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Ruby 3.2 - Notificaciones & Alertas (:8084)",
+      "item": [
+        {
+          "name": "REST - Listar Destinatarios (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "{{bearer_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_host}}:8084/api/v1/destinatarios",
+              "host": ["{{base_host}}"],
+              "port": "8084",
+              "path": ["api", "v1", "destinatarios"]
+            }
+          }
+        },
+        {
+          "name": "REST - Registrar Destinatario (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "{{bearer_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Ing. Fernando Castro\",\n  \"email\": \"fernando.castro@empresa.com\",\n  \"telefono\": \"+525543219876\",\n  \"canal_preferido\": \"EMAIL\"\n}"
+            },
+            "url": {
+              "raw": "{{base_host}}:8084/api/v1/destinatarios",
+              "host": ["{{base_host}}"],
+              "port": "8084",
+              "path": ["api", "v1", "destinatarios"]
+            }
+          }
+        },
+        {
+          "name": "REST - Actualizar Destinatario (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "{{bearer_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Ing. Fernando Castro M.\",\n  \"email\": \"f.castro@empresa.com\",\n  \"canal_preferido\": \"SMS\"\n}"
+            },
+            "url": {
+              "raw": "{{base_host}}:8084/api/v1/destinatarios/DEST-001",
+              "host": ["{{base_host}}"],
+              "port": "8084",
+              "path": ["api", "v1", "destinatarios", "DEST-001"]
+            }
+          }
+        },
+        {
+          "name": "REST - Eliminar Destinatario (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "{{bearer_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_host}}:8084/api/v1/destinatarios/DEST-003",
+              "host": ["{{base_host}}"],
+              "port": "8084",
+              "path": ["api", "v1", "destinatarios", "DEST-003"]
+            }
+          }
+        },
+        {
+          "name": "SOAP - Despachar Alerta Crítica XML",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "text/xml; charset=utf-8" },
+              { "key": "Authorization", "value": "{{soap_basic_auth}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:not=\"http://ecommerce.com/notificaciones\">\n  <soapenv:Header/>\n  <soapenv:Body>\n    <not:DespacharAlertaCritica>\n      <tipoAlerta>FALLA_INFRAESTRUCTURA</tipoAlerta>\n      <canal>EMAIL</canal>\n      <destinatario>noc@ecommerce.com</destinatario>\n      <mensaje>Latencia elevada en enlace de base de datos</mensaje>\n      <prioridad>ALTA</prioridad>\n    </not:DespacharAlertaCritica>\n  </soapenv:Body>\n</soapenv:Envelope>"
+            },
+            "url": {
+              "raw": "{{base_host}}:8084/soap/notificaciones",
+              "host": ["{{base_host}}"],
+              "port": "8084",
+              "path": ["soap", "notificaciones"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. C# .NET 9 - Facturación SAT CFDI (:8085)",
+      "item": [
+        {
+          "name": "REST - Listar Facturas (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "{{bearer_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_host}}:8085/api/v1/facturas",
+              "host": ["{{base_host}}"],
+              "port": "8085",
+              "path": ["api", "v1", "facturas"]
+            }
+          }
+        },
+        {
+          "name": "REST - Crear Factura Directa (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "{{bearer_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rfcCliente\": \"XAXX010101000\",\n  \"razonSocialCliente\": \"Público en General\",\n  \"subtotal\": 1000.00,\n  \"impuestos\": 160.00,\n  \"total\": 1160.00,\n  \"concepto\": \"Venta al mostrador de artículos de oficina\"\n}"
+            },
+            "url": {
+              "raw": "{{base_host}}:8085/api/v1/facturas",
+              "host": ["{{base_host}}"],
+              "port": "8085",
+              "path": ["api", "v1", "facturas"]
+            }
+          }
+        },
+        {
+          "name": "REST - Actualizar Factura (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "{{bearer_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"concepto\": \"Venta corregida con adenda fiscal especial\",\n  \"estatus\": \"VIGENTE\"\n}"
+            },
+            "url": {
+              "raw": "{{base_host}}:8085/api/v1/facturas/FAC-2026-001",
+              "host": ["{{base_host}}"],
+              "port": "8085",
+              "path": ["api", "v1", "facturas", "FAC-2026-001"]
+            }
+          }
+        },
+        {
+          "name": "REST - Cancelar Factura SAT (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "{{bearer_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_host}}:8085/api/v1/facturas/FAC-2026-002",
+              "host": ["{{base_host}}"],
+              "port": "8085",
+              "path": ["api", "v1", "facturas", "FAC-2026-002"]
+            }
+          }
+        },
+        {
+          "name": "SOAP - Timbrar CFDI SAT CoreWCF XML",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "text/xml; charset=utf-8" },
+              { "key": "SOAPAction", "value": "http://ecommerce.com/facturacion/IFacturacionService/TimbrarComprobante" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">\n  <s:Body>\n    <TimbrarComprobante xmlns=\"http://ecommerce.com/facturacion\">\n      <request xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">\n        <RfcEmisor>ECO20260101ECO</RfcEmisor>\n        <RfcReceptor>GOLF850315ABC</RfcReceptor>\n        <Subtotal>1899.99</Subtotal>\n        <Iva>303.99</Iva>\n        <Total>2203.98</Total>\n        <Concepto>Adquisición de Laptop Dell XPS 15</Concepto>\n        <UsuarioAuth>admin</UsuarioAuth>\n        <PasswordAuth>admin_pass_2026</PasswordAuth>\n      </request>\n    </TimbrarComprobante>\n  </s:Body>\n</s:Envelope>"
+            },
+            "url": {
+              "raw": "{{base_host}}:8085/soap/FacturacionService.svc",
+              "host": ["{{base_host}}"],
+              "port": "8085",
+              "path": ["soap", "FacturacionService.svc"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. VB.NET .NET 9 - Auditoría & Bitácoras (:8086)",
+      "item": [
+        {
+          "name": "REST - Listar Bitácora de Auditoría (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "{{bearer_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_host}}:8086/api/v1/logs",
+              "host": ["{{base_host}}"],
+              "port": "8086",
+              "path": ["api", "v1", "logs"]
+            }
+          }
+        },
+        {
+          "name": "REST - Registrar Evento de Auditoría (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "{{bearer_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"servicioOrigen\": \"DEVOPS_CLI\",\n  \"accion\": \"CHECK_HEALTH\",\n  \"usuario\": \"admin_sec\",\n  \"detalles\": \"Inspección de rutina completada sin novedades\",\n  \"nivel\": \"INFO\"\n}"
+            },
+            "url": {
+              "raw": "{{base_host}}:8086/api/v1/logs",
+              "host": ["{{base_host}}"],
+              "port": "8086",
+              "path": ["api", "v1", "logs"]
+            }
+          }
+        },
+        {
+          "name": "REST - Eliminar Evento Específico (DELETE by ID)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "{{bearer_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_host}}:8086/api/v1/logs/LOG-2026-0001",
+              "host": ["{{base_host}}"],
+              "port": "8086",
+              "path": ["api", "v1", "logs", "LOG-2026-0001"]
+            }
+          }
+        },
+        {
+          "name": "SOAP - Registrar Evento CoreWCF XML",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "text/xml; charset=utf-8" },
+              { "key": "SOAPAction", "value": "http://ecommerce.com/auditoria/IAuditoriaService/RegistrarEvento" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">\n  <s:Body>\n    <RegistrarEvento xmlns=\"http://ecommerce.com/auditoria\">\n      <request xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">\n        <ServicioOrigen>SOAP_CLIENT_TEST</ServicioOrigen>\n        <Accion>SECURITY_AUDIT</Accion>\n        <Usuario>auditor_fiscal</Usuario>\n        <Nivel>INFO</Nivel>\n        <Detalles>Verificación formal de integridad de bitácora</Detalles>\n        <UsuarioAuth>admin</UsuarioAuth>\n        <PasswordAuth>admin_pass_2026</PasswordAuth>\n      </request>\n    </RegistrarEvento>\n  </s:Body>\n</s:Envelope>"
+            },
+            "url": {
+              "raw": "{{base_host}}:8086/soap/AuditoriaService.svc",
+              "host": ["{{base_host}}"],
+              "port": "8086",
+              "path": ["soap", "AuditoriaService.svc"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

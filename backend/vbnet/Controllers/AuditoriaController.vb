@@ -69,5 +69,25 @@ Namespace Controllers
                 Key .statusCode = 200
             })
         End Function
+
+        <HttpDelete("{id}")>
+        <ProducesResponseType(StatusCodes.Status200OK)>
+        <ProducesResponseType(StatusCodes.Status404NotFound)>
+        <ProducesResponseType(StatusCodes.Status401Unauthorized)>
+        Public Function EliminarLog(id As String) As IActionResult
+            If _storage.EliminarPorId(id) Then
+                Return Ok(New With {
+                    Key .message = $"Registro de auditoría con ID '{id}' eliminado correctamente.",
+                    Key .statusCode = 200
+                })
+            End If
+
+            Return NotFound(New With {
+                Key .[error] = "Not Found",
+                Key .message = $"Registro de auditoría con ID '{id}' no encontrado.",
+                Key .statusCode = 404
+            })
+        End Function
     End Class
 End Namespace
+

@@ -97,5 +97,10 @@ Namespace Services
         Public Function TotalEventos() As Integer
             Return _logs.Count
         End Function
+
+        Public Function EliminarPorId(id As String) As Boolean
+            Dim l As LogEvento = Nothing
+            Return _logs.TryRemove(id.Trim().ToUpper(), l)
+        End Function
     End Class
 End Namespace

@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:soapui-project id="9b079336-790f-49fe-97fe-79a8e81e7daa" activeEnvironment="Default" name="EcoLogistics_SoapUI_Suite" resourceRoot="" soapui-version="5.7.0" xmlns:con="http://eviware.com/soapui/config">
+  <con:settings/>
+  
+  <!-- 1. Java 21 Spring-WS Inventario -->
+  <con:interface xsi:type="con:WsdlInterface" id="java-inventario-iface" name="InventarioPortSoap11" type="wsdl" bindingName="{http://ecommerce.com/inventario}InventarioPortSoap11" soapVersion="1_1" anonymous="optional" definition="http://192.168.1.176:8081/ws/inventario.wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <con:settings/>
+    <con:definitionCache/>
+    <con:endpoints>
+      <con:endpoint>http://192.168.1.176:8081/ws</con:endpoint>
+    </con:endpoints>
+    <con:operation id="op-consultar-stock" isOneWay="false" action="" name="ConsultarStock" bindingOperationName="ConsultarStock" type="Request-Response" outputName="ConsultarStockResponse" inputName="ConsultarStockRequest" receivesAttachments="false" sendsAttachments="false" anonymous="optional">
+      <con:settings/>
+      <con:call id="req-java-stock-1" name="Req 1 - Consultar Stock Laptop">
+        <con:settings/>
+        <con:encoding>UTF-8</con:encoding>
+        <con:endpoint>http://192.168.1.176:8081/ws</con:endpoint>
+        <con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:inv="http://ecommerce.com/inventario">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <inv:ConsultarStockRequest>
+      <inv:sku>LAP-001</inv:sku>
+    </inv:ConsultarStockRequest>
+  </soapenv:Body>
+</soapenv:Envelope>]]></con:request>
+        <con:credentials>
+          <con:username>admin</con:username>
+          <con:password>admin_pass_2026</con:password>
+          <con:authType>Global HTTP Settings</con:authType>
+        </con:credentials>
+      </con:call>
+    </con:operation>
+  </con:interface>
+
+  <!-- 2. Python 3.12 Spyne Envíos -->
+  <con:interface xsi:type="con:WsdlInterface" id="python-envios-iface" name="EnviosServiceSoap11" type="wsdl" bindingName="{http://ecommerce.com/envios}EnviosServiceSoap11" soapVersion="1_1" anonymous="optional" definition="http://192.168.1.176:8082/soap/envios?wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <con:settings/>
+    <con:definitionCache/>
+    <con:endpoints>
+      <con:endpoint>http://192.168.1.176:8082/soap/envios</con:endpoint>
+    </con:endpoints>
+    <con:operation id="op-calcular-costo" isOneWay="false" action="" name="CalcularCostoEnvio" bindingOperationName="CalcularCostoEnvio" type="Request-Response" outputName="CalcularCostoEnvioResponse" inputName="CalcularCostoEnvio" receivesAttachments="false" sendsAttachments="false" anonymous="optional">
+      <con:settings/>
+      <con:call id="req-py-tarifa-1" name="Req 1 - Cotizar CDMX a GDL">
+        <con:settings/>
+        <con:encoding>UTF-8</con:encoding>
+        <con:endpoint>http://192.168.1.176:8082/soap/envios</con:endpoint>
+        <con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:env="http://ecommerce.com/envios">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <env:CalcularCostoEnvio>
+      <env:origen>CDMX Centro</env:origen>
+      <env:destino>Guadalajara Jalisco</env:destino>
+      <env:peso_kg>3.5</env:peso_kg>
+      <env:tipo_servicio>EXPRESS</env:tipo_servicio>
+    </env:CalcularCostoEnvio>
+  </soapenv:Body>
+</soapenv:Envelope>]]></con:request>
+        <con:credentials>
+          <con:username>admin</con:username>
+          <con:password>admin_pass_2026</con:password>
+          <con:authType>Global HTTP Settings</con:authType>
+        </con:credentials>
+      </con:call>
+    </con:operation>
+  </con:interface>
+
+  <!-- 3. PHP 8.2 Órdenes -->
+  <con:interface xsi:type="con:WsdlInterface" id="php-ordenes-iface" name="OrdenesPortSoap11" type="wsdl" bindingName="{http://ecommerce.com/ordenes}OrdenesBinding" soapVersion="1_1" anonymous="optional" definition="http://192.168.1.176:8083/soap/ordenes.wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <con:settings/>
+    <con:definitionCache/>
+    <con:endpoints>
+      <con:endpoint>http://192.168.1.176:8083/soap/ordenes</con:endpoint>
+    </con:endpoints>
+    <con:operation id="op-validar-orden" isOneWay="false" action="http://ecommerce.com/ordenes#ValidarEstadoOrden" name="ValidarEstadoOrden" bindingOperationName="ValidarEstadoOrden" type="Request-Response" outputName="ValidarEstadoOrdenResponse" inputName="ValidarEstadoOrdenRequest" receivesAttachments="false" sendsAttachments="false" anonymous="optional">
+      <con:settings/>
+      <con:call id="req-php-orden-1" name="Req 1 - Validar Orden 101">
+        <con:settings/>
+        <con:encoding>UTF-8</con:encoding>
+        <con:endpoint>http://192.168.1.176:8083/soap/ordenes</con:endpoint>
+        <con:request><![CDATA[<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ord="http://ecommerce.com/ordenes">
+  <soap:Header/>
+  <soap:Body>
+    <ord:ValidarEstadoOrden>
+      <ordenId>ORD-2026-101</ordenId>
+    </ord:ValidarEstadoOrden>
+  </soap:Body>
+</soap:Envelope>]]></con:request>
+      </con:call>
+    </con:operation>
+  </con:interface>
+
+  <!-- 4. Ruby 3.2 Notificaciones -->
+  <con:interface xsi:type="con:WsdlInterface" id="ruby-notif-iface" name="NotificacionesPortSoap11" type="wsdl" bindingName="{http://ecommerce.com/notificaciones}NotificacionesBinding" soapVersion="1_1" anonymous="optional" definition="http://192.168.1.176:8084/soap/notificaciones/wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <con:settings/>
+    <con:definitionCache/>
+    <con:endpoints>
+      <con:endpoint>http://192.168.1.176:8084/soap/notificaciones</con:endpoint>
+    </con:endpoints>
+    <con:operation id="op-despachar-alerta" isOneWay="false" action="http://ecommerce.com/notificaciones#DespacharAlertaCritica" name="DespacharAlertaCritica" bindingOperationName="DespacharAlertaCritica" type="Request-Response" outputName="DespacharAlertaCriticaResponse" inputName="DespacharAlertaCriticaRequest" receivesAttachments="false" sendsAttachments="false" anonymous="optional">
+      <con:settings/>
+      <con:call id="req-ruby-alerta-1" name="Req 1 - Despachar Alerta">
+        <con:settings/>
+        <con:encoding>UTF-8</con:encoding>
+        <con:endpoint>http://192.168.1.176:8084/soap/notificaciones</con:endpoint>
+        <con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:not="http://ecommerce.com/notificaciones">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <not:DespacharAlertaCritica>
+      <tipoAlerta>FALLA_INFRAESTRUCTURA</tipoAlerta>
+      <canal>EMAIL</canal>
+      <destinatario>noc@ecommerce.com</destinatario>
+      <mensaje>Latencia elevada en enlace troncal</mensaje>
+      <prioridad>ALTA</prioridad>
+    </not:DespacharAlertaCritica>
+  </soapenv:Body>
+</soapenv:Envelope>]]></con:request>
+      </con:call>
+    </con:operation>
+  </con:interface>
+
+  <!-- 5. C# .NET 9 CoreWCF Facturación SAT -->
+  <con:interface xsi:type="con:WsdlInterface" id="csharp-sat-iface" name="BasicHttpBinding_IFacturacionService" type="wsdl" bindingName="{http://ecommerce.com/facturacion}BasicHttpBinding_IFacturacionService" soapVersion="1_1" anonymous="optional" definition="http://192.168.1.176:8085/soap/FacturacionService.svc?wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <con:settings/>
+    <con:definitionCache/>
+    <con:endpoints>
+      <con:endpoint>http://192.168.1.176:8085/soap/FacturacionService.svc</con:endpoint>
+    </con:endpoints>
+    <con:operation id="op-timbrar-cfdi" isOneWay="false" action="http://ecommerce.com/facturacion/IFacturacionService/TimbrarComprobante" name="TimbrarComprobante" bindingOperationName="TimbrarComprobante" type="Request-Response" outputName="TimbrarComprobanteResponse" inputName="TimbrarComprobante" receivesAttachments="false" sendsAttachments="false" anonymous="optional">
+      <con:settings/>
+      <con:call id="req-cs-timbrar-1" name="Req 1 - Timbrar CFDI SAT">
+        <con:settings/>
+        <con:encoding>UTF-8</con:encoding>
+        <con:endpoint>http://192.168.1.176:8085/soap/FacturacionService.svc</con:endpoint>
+        <con:request><![CDATA[<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+  <s:Body>
+    <TimbrarComprobante xmlns="http://ecommerce.com/facturacion">
+      <request xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+        <RfcEmisor>ECO20260101ECO</RfcEmisor>
+        <RfcReceptor>GOLF850315ABC</RfcReceptor>
+        <Subtotal>1899.99</Subtotal>
+        <Iva>303.99</Iva>
+        <Total>2203.98</Total>
+        <Concepto>Adquisición de Laptop Dell XPS 15</Concepto>
+        <UsuarioAuth>admin</UsuarioAuth>
+        <PasswordAuth>admin_pass_2026</PasswordAuth>
+      </request>
+    </TimbrarComprobante>
+  </s:Body>
+</s:Envelope>]]></con:request>
+      </con:call>
+    </con:operation>
+  </con:interface>
+
+  <!-- 6. VB.NET .NET 9 CoreWCF Auditoría -->
+  <con:interface xsi:type="con:WsdlInterface" id="vbnet-audit-iface" name="BasicHttpBinding_IAuditoriaService" type="wsdl" bindingName="{http://ecommerce.com/auditoria}BasicHttpBinding_IAuditoriaService" soapVersion="1_1" anonymous="optional" definition="http://192.168.1.176:8086/soap/AuditoriaService.svc?wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <con:settings/>
+    <con:definitionCache/>
+    <con:endpoints>
+      <con:endpoint>http://192.168.1.176:8086/soap/AuditoriaService.svc</con:endpoint>
+    </con:endpoints>
+    <con:operation id="op-registrar-evento" isOneWay="false" action="http://ecommerce.com/auditoria/IAuditoriaService/RegistrarEvento" name="RegistrarEvento" bindingOperationName="RegistrarEvento" type="Request-Response" outputName="RegistrarEventoResponse" inputName="RegistrarEvento" receivesAttachments="false" sendsAttachments="false" anonymous="optional">
+      <con:settings/>
+      <con:call id="req-vb-audit-1" name="Req 1 - Registrar Evento SOAP">
+        <con:settings/>
+        <con:encoding>UTF-8</con:encoding>
+        <con:endpoint>http://192.168.1.176:8086/soap/AuditoriaService.svc</con:endpoint>
+        <con:request><![CDATA[<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+  <s:Body>
+    <RegistrarEvento xmlns="http://ecommerce.com/auditoria">
+      <request xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+        <ServicioOrigen>SOAPUI_CLIENT</ServicioOrigen>
+        <Accion>TEST_INSPECTION</Accion>
+        <Usuario>profesor_evaluador</Usuario>
+        <Nivel>INFO</Nivel>
+        <Detalles>Prueba de integración SOAP ejecutada desde SoapUI</Detalles>
+        <UsuarioAuth>admin</UsuarioAuth>
+        <PasswordAuth>admin_pass_2026</PasswordAuth>
+      </request>
+    </RegistrarEvento>
+  </s:Body>
+</s:Envelope>]]></con:request>
+      </con:call>
+    </con:operation>
+  </con:interface>
+
+  <con:properties/>
+</con:soapui-project>
