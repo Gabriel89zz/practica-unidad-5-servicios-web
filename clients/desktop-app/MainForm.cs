@@ -56,20 +56,20 @@ namespace EcoLogistics.DesktopApp
         private void InitializeComponent()
         {
             this.Text = "EcoLogistics Desktop Suite - Cliente de Escritorio Heterogéneo (REST & SOAP)";
-            this.Size = new Size(1100, 750);
-            this.MinimumSize = new Size(950, 650);
+            this.Size = new Size(1150, 780);
+            this.MinimumSize = new Size(1000, 680);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.FromArgb(15, 23, 42);
             this.ForeColor = Color.White;
             this.Font = new Font("Segoe UI", 9.5f, FontStyle.Regular);
 
-            // Panel Superior: Configuración de Host
+            // 1. Panel Superior: Configuración de Host
             Panel pnlTop = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 65,
+                Height = 60,
                 BackColor = Color.FromArgb(10, 14, 26),
-                Padding = new Padding(15, 12, 15, 12)
+                Padding = new Padding(16, 12, 16, 12)
             };
 
             Label lblTitle = new Label
@@ -78,7 +78,7 @@ namespace EcoLogistics.DesktopApp
                 Font = new Font("Segoe UI", 12f, FontStyle.Bold),
                 ForeColor = Color.FromArgb(96, 165, 250),
                 AutoSize = true,
-                Location = new Point(15, 18)
+                Location = new Point(16, 16)
             };
 
             Label lblHost = new Label
@@ -86,14 +86,14 @@ namespace EcoLogistics.DesktopApp
                 Text = "Servidor Base:",
                 ForeColor = Color.FromArgb(148, 163, 184),
                 AutoSize = true,
-                Location = new Point(270, 22)
+                Location = new Point(270, 20)
             };
 
             txtHost = new TextBox
             {
                 Text = "http://localhost",
-                Width = 200,
-                Location = new Point(370, 18),
+                Width = 210,
+                Location = new Point(370, 16),
                 BackColor = Color.FromArgb(30, 41, 59),
                 ForeColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle,
@@ -103,13 +103,14 @@ namespace EcoLogistics.DesktopApp
             btnTestHost = new Button
             {
                 Text = "Probar Conexión",
-                Location = new Point(585, 16),
-                Width = 130,
-                Height = 30,
+                Location = new Point(595, 14),
+                Width = 135,
+                Height = 32,
                 BackColor = Color.FromArgb(37, 99, 235),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
+                Cursor = Cursors.Hand,
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold)
             };
             btnTestHost.FlatAppearance.BorderSize = 0;
             btnTestHost.Click += async (s, e) => await TestConnectionAsync();
@@ -119,22 +120,23 @@ namespace EcoLogistics.DesktopApp
                 Text = "● Sin probar",
                 ForeColor = Color.FromArgb(148, 163, 184),
                 AutoSize = true,
-                Location = new Point(730, 22)
+                Location = new Point(745, 20)
             };
 
             pnlTop.Controls.AddRange(new Control[] { lblTitle, lblHost, txtHost, btnTestHost, lblHostStatus });
-            this.Controls.Add(pnlTop);
 
-            // Contenedor de Pestañas
+            // 2. Contenedor de Pestañas
             TabControl tabControl = new TabControl
             {
                 Dock = DockStyle.Fill,
-                Padding = new Point(15, 8)
+                Appearance = TabAppearance.FlatButtons,
+                ItemSize = new Size(0, 1),
+                SizeMode = TabSizeMode.Fixed
             };
 
-            TabPage tabFacturacion = new TabPage("🏛️ Facturación y Timbrado SAT (C# :8085)");
-            TabPage tabLogistica = new TabPage("📦 Logística y Paquetería (Python :8082)");
-            TabPage tabInspector = new TabPage("🔍 Monitor de Red Distribuida");
+            TabPage tabFacturacion = new TabPage();
+            TabPage tabLogistica = new TabPage();
+            TabPage tabInspector = new TabPage();
 
             tabFacturacion.BackColor = Color.FromArgb(15, 23, 42);
             tabLogistica.BackColor = Color.FromArgb(15, 23, 42);
@@ -145,7 +147,41 @@ namespace EcoLogistics.DesktopApp
             BuildInspectorTab(tabInspector);
 
             tabControl.TabPages.AddRange(new TabPage[] { tabFacturacion, tabLogistica, tabInspector });
+
+            // 3. Barra de Navegación Moderna de Pestañas (Resuelve superposición y dibujo en WinForms)
+            Panel pnlNavBar = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 46,
+                BackColor = Color.FromArgb(15, 23, 42),
+                Padding = new Padding(12, 6, 12, 6)
+            };
+
+            FlowLayoutPanel flowTabs = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = false,
+                AutoSize = false
+            };
+
+            Button btnNavFacturacion = CreateNavButton("🏛️ Facturación SAT (C# :8085)", true);
+            Button btnNavLogistica = CreateNavButton("📦 Logística y Envíos (Python :8082)", false);
+            Button btnNavInspector = CreateNavButton("🔍 Monitor de Red Distribuida", false);
+
+            Button[] navButtons = new Button[] { btnNavFacturacion, btnNavLogistica, btnNavInspector };
+
+            btnNavFacturacion.Click += (s, e) => SetActiveTab(0, tabControl, navButtons);
+            btnNavLogistica.Click += (s, e) => SetActiveTab(1, tabControl, navButtons);
+            btnNavInspector.Click += (s, e) => SetActiveTab(2, tabControl, navButtons);
+
+            flowTabs.Controls.AddRange(navButtons);
+            pnlNavBar.Controls.Add(flowTabs);
+
+            // Orden estricto de adición a Controls para respetar z-order de WinForms Docking
             this.Controls.Add(tabControl);
+            this.Controls.Add(pnlNavBar);
+            this.Controls.Add(pnlTop);
         }
 
         private void BuildFacturacionTab(TabPage tab)
@@ -172,11 +208,12 @@ namespace EcoLogistics.DesktopApp
             TableLayoutPanel pnlForm = new TableLayoutPanel
             {
                 Dock = DockStyle.Top,
-                Height = 310,
+                Height = 330,
                 ColumnCount = 2,
-                RowCount = 8
+                RowCount = 8,
+                Padding = new Padding(0, 4, 0, 8)
             };
-            pnlForm.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120f));
+            pnlForm.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 115f));
             pnlForm.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f));
 
             txtRfcEmisor = CreateTextBox("ECO20260101ECO");
@@ -220,14 +257,14 @@ namespace EcoLogistics.DesktopApp
 
             btnTimbrarSoap = new Button
             {
-                Text = "⚡ Timbrar con SOAP CoreWCF",
+                Text = "⚡ Timbrar con SOAP (:8085)",
                 Dock = DockStyle.Fill,
-                Height = 36,
+                Height = 34,
                 BackColor = Color.FromArgb(219, 39, 119),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Cursor = Cursors.Hand,
-                Font = new Font("Segoe UI", 9.5f, FontStyle.Bold)
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold)
             };
             btnTimbrarSoap.FlatAppearance.BorderSize = 0;
             btnTimbrarSoap.Click += async (s, e) => await TimbrarFacturaSoapAsync();
@@ -636,11 +673,11 @@ namespace EcoLogistics.DesktopApp
 
                     foreach (var item in doc.RootElement.EnumerateArray())
                     {
-                        string id = item.GetProperty("id").GetString() ?? "";
-                        string uuid = item.GetProperty("folio_fiscal_uuid").GetString() ?? "";
-                        string receptor = item.GetProperty("rfc_receptor").GetString() ?? "";
-                        decimal total = item.GetProperty("total").GetDecimal();
-                        string estatus = item.GetProperty("estatus").GetString() ?? "";
+                        string id = GetJsonString(item, "folio", "id", "Folio", "Id");
+                        string uuid = GetJsonString(item, "folioFiscalUUID", "folio_fiscal_uuid", "FolioFiscalUUID", "uuid", "UUID");
+                        string receptor = GetJsonString(item, "rfcCliente", "rfc_receptor", "RfcCliente", "RfcReceptor");
+                        decimal total = GetJsonDecimal(item, "total", "Total");
+                        string estatus = GetJsonString(item, "estatus", "Estatus");
 
                         dgvFacturas.Rows.Add(id, uuid, receptor, $"${total:F2}", estatus);
                     }
@@ -684,11 +721,11 @@ namespace EcoLogistics.DesktopApp
                     bool found = false;
                     foreach (var item in doc.RootElement.EnumerateArray())
                     {
-                        string orderId = item.GetProperty("id").GetString() ?? "ORD-2026-001";
-                        string cliente = item.GetProperty("cliente_nombre").GetString() ?? "Cliente Mostrador";
-                        decimal subtotal = item.GetProperty("subtotal").GetDecimal();
-                        decimal impuestos = item.GetProperty("impuestos").GetDecimal();
-                        decimal total = item.GetProperty("total").GetDecimal();
+                        string orderId = GetJsonString(item, "id", "Id", "folio");
+                        string cliente = GetJsonString(item, "cliente_nombre", "clienteNombre", "ClienteNombre");
+                        decimal subtotal = GetJsonDecimal(item, "subtotal", "Subtotal");
+                        decimal impuestos = GetJsonDecimal(item, "impuestos", "Impuestos");
+                        decimal total = GetJsonDecimal(item, "total", "Total");
 
                         txtConcepto.Text = $"Facturación de {orderId} ({cliente})";
                         txtSubtotal.Text = subtotal.ToString("F2");
@@ -700,7 +737,7 @@ namespace EcoLogistics.DesktopApp
                                                    $"• Subtotal    : ${subtotal:F2} USD\n" +
                                                    $"• IVA 16%     : ${impuestos:F2} USD\n" +
                                                    $"• Total Orden : ${total:F2} USD\n\n" +
-                                                   "Haga clic en '⚡ Timbrar con SOAP CoreWCF' para generar el comprobante fiscal ante el SAT en C# (:8085).";
+                                                   "Haga clic en '⚡ Timbrar con SOAP (:8085)' para generar el comprobante fiscal ante el SAT en C# (:8085).";
                         found = true;
                         break;
                     }
@@ -816,11 +853,11 @@ namespace EcoLogistics.DesktopApp
                 {
                     using JsonDocument doc = JsonDocument.Parse(responseJson);
                     var root = doc.RootElement;
-                    string numGuia = root.GetProperty("numero_guia").GetString() ?? "";
-                    string estado = root.GetProperty("estado").GetString() ?? "";
-                    string origen = root.GetProperty("origen").GetString() ?? "";
-                    string destino = root.GetProperty("destino").GetString() ?? "";
-                    string fecha = root.GetProperty("fecha_entrega_estimada").GetString() ?? "";
+                    string numGuia = GetJsonString(root, "numero_guia", "numeroGuia", "NumeroGuia", "guia");
+                    string estado = GetJsonString(root, "estado", "Estado");
+                    string origen = GetJsonString(root, "origen", "remitente_direccion", "remitente_nombre", "Origen");
+                    string destino = GetJsonString(root, "destino", "destinatario_direccion", "destinatario_nombre", "Destino");
+                    string fecha = GetJsonString(root, "fecha_entrega_estimada", "fechaEntregaEstimada", "FechaEntregaEstimada");
 
                     StringBuilder sb = new StringBuilder();
                     sb.AppendLine($"✓ GUÍA LOGÍSTICA ENCONTRADA (HTTP 200 OK)");
@@ -834,10 +871,10 @@ namespace EcoLogistics.DesktopApp
                     {
                         foreach (var ev in hist.EnumerateArray())
                         {
-                            string ts = ev.GetProperty("timestamp").GetString() ?? "";
-                            string st = ev.GetProperty("estado").GetString() ?? "";
-                            string ub = ev.GetProperty("ubicacion").GetString() ?? "";
-                            string com = ev.GetProperty("comentario").GetString() ?? "";
+                            string ts = GetJsonString(ev, "timestamp", "Timestamp");
+                            string st = GetJsonString(ev, "estado", "Estado");
+                            string ub = GetJsonString(ev, "ubicacion", "Ubicacion");
+                            string com = GetJsonString(ev, "descripcion", "comentario", "Descripcion", "Comentario");
                             sb.AppendLine($" • [{ts}] {st} @ {ub} ({com})");
                         }
                     }
@@ -882,6 +919,63 @@ namespace EcoLogistics.DesktopApp
             };
             panel.Controls.Add(lbl, 0, row);
             panel.Controls.Add(inputControl, 1, row);
+        }
+
+        private static string GetJsonString(JsonElement element, params string[] propertyNames)
+        {
+            foreach (var name in propertyNames)
+            {
+                if (element.TryGetProperty(name, out var prop))
+                {
+                    return prop.GetString() ?? "";
+                }
+            }
+            return "";
+        }
+
+        private static decimal GetJsonDecimal(JsonElement element, params string[] propertyNames)
+        {
+            foreach (var name in propertyNames)
+            {
+                if (element.TryGetProperty(name, out var prop))
+                {
+                    if (prop.ValueKind == JsonValueKind.Number && prop.TryGetDecimal(out var val))
+                        return val;
+                    if (decimal.TryParse(prop.GetString(), out var parsed))
+                        return parsed;
+                }
+            }
+            return 0m;
+        }
+
+        private Button CreateNavButton(string text, bool isActive)
+        {
+            Button btn = new Button
+            {
+                Text = text,
+                AutoSize = true,
+                Height = 34,
+                Padding = new Padding(14, 4, 14, 4),
+                Margin = new Padding(0, 0, 10, 0),
+                FlatStyle = FlatStyle.Flat,
+                Cursor = Cursors.Hand,
+                Font = new Font("Segoe UI", 9.5f, FontStyle.Bold),
+                BackColor = isActive ? Color.FromArgb(37, 99, 235) : Color.FromArgb(30, 41, 59),
+                ForeColor = isActive ? Color.White : Color.FromArgb(148, 163, 184)
+            };
+            btn.FlatAppearance.BorderSize = 0;
+            return btn;
+        }
+
+        private void SetActiveTab(int index, TabControl tabControl, Button[] navButtons)
+        {
+            tabControl.SelectedIndex = index;
+            for (int i = 0; i < navButtons.Length; i++)
+            {
+                bool active = (i == index);
+                navButtons[i].BackColor = active ? Color.FromArgb(37, 99, 235) : Color.FromArgb(30, 41, 59);
+                navButtons[i].ForeColor = active ? Color.White : Color.FromArgb(148, 163, 184);
+            }
         }
     }
 }
