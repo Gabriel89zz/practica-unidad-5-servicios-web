@@ -2,6 +2,21 @@
 **Materia:** Programación en Ambiente Cliente-Servidor (7.° Semestre, Ingeniería en Informática)  
 **Arquitectura:** Monorepo Multiplataforma con Microservicios Duales RESTful (JSON) y SOAP (XML/WSDL)
 
+> ### 🎓 Documentación Oficial y Reporte Académico
+> **Alumno:** Hector Gabriel Torres Arzola  
+> **Carrera:** Ingeniería en Informática — 7.° Semestre  
+> **Servidor de Producción:** Debian GNU/Linux 13 (`192.168.1.176`)  
+> 
+> 📄 **[👉 HACER CLIC AQUÍ PARA ABRIR EL REPORTE COMPLETO DE PRÁCTICA FINAL (docs/REPORTE_PRACTICA_FINAL.md)](docs/REPORTE_PRACTICA_FINAL.md)**  
+> 
+> *El reporte incluye la resolución de todos los puntos solicitados con 14 capturas de pantalla de evidencia:*
+> - *Topología de red, Docker y Firewall UFW (8081-8086).*
+> - *Contratos formales WSDL y documentación interactiva OpenAPI / Swagger.*
+> - *Seguridad perimetral (HTTP 401 Unauthorized y SOAP Fault).*
+> - *Pruebas profesionales en Postman y SoapUI.*
+> - *Demostración y flujo de datos en vivo de las 3 Aplicaciones Cliente (Web SPA, Desktop WinForms y CLI Terminal).*
+> - *Tabla comparativa técnica y de rendimiento entre los 6 lenguajes.*
+
 ---
 
 ## 1. Visión General del Sistema
@@ -70,9 +85,14 @@ practica-unidad-5/
 ├── run.sh                         # Menú interactivo unificado para Linux / Debian / macOS / WSL
 ├── run.bat                        # Menú interactivo unificado para Windows
 └── docs/
+    ├── REPORTE_PRACTICA_FINAL.md  # 📄 Reporte final académico completo con 14 evidencias
+    ├── img/                       # Capturas de pantalla de evidencias (Docker, UFW, Postman, etc.)
     ├── ARCHITECTURE.md            # Justificación de diseño, diagramas y análisis SL vs Propietario
+    ├── COMPARATIVA_SERVICIOS_WEB.md # Comparativa técnica exhaustiva entre los 6 lenguajes
     ├── API_REFERENCE.md           # Catálogo detallado de todos los endpoints REST y ejemplos curl
     ├── SOAP_ENVELOPES.md          # Ejemplos de sobres XML de petición/respuesta para Postman/SoapUI
+    ├── EcoLogistics_Postman_Collection.json # Colección oficial de pruebas para Postman
+    ├── EcoLogistics_SoapUI_Project.xml     # Proyecto oficial de pruebas para SoapUI
     ├── test_suite.py              # Suite de pruebas automatizadas en Python
     ├── test_all.ps1               # Script de pruebas automatizadas en PowerShell
     └── index.html                 # Portal web interactivo y consola de pruebas visual
@@ -259,3 +279,18 @@ En entornos Windows:
 - HTTP Basic Auth: Usuario `admin`, Contraseña `admin_pass_2026` (`Authorization: Basic YWRtaW46YWRtaW5fcGFzc18yMDI2`)
 - O encabezado XML `<soapenv:Header><AuthHeader>...`
 - Fallo: HTTP `500` con `SOAP-ENV:Fault` (`soapenv:Client.AuthenticationFailed`).
+
+---
+
+## 8. Entregables y Reporte de Práctica Final
+
+Toda la documentación académica solicitada en la rúbrica se encuentra consolidada con sus respectivas evidencias fotográficas y comparativas en los siguientes documentos:
+
+| Documento | Descripción / Contenido Principal |
+| :--- | :--- |
+| **[📄 docs/REPORTE_PRACTICA_FINAL.md](docs/REPORTE_PRACTICA_FINAL.md)** | **Reporte Oficial Completo:** Problema real, arquitectura, APIs REST, servicios SOAP WSDL, seguridad HTTP 401, Postman, SoapUI, 3 aplicaciones cliente y 14 capturas de pantalla de evidencia. |
+| **[📊 docs/COMPARATIVA_SERVICIOS_WEB.md](docs/COMPARATIVA_SERVICIOS_WEB.md)** | **Comparativa Técnica Exhaustiva:** Matriz detallada entre los 6 lenguajes (sintaxis, facilidad, latencias REST/SOAP, consumo de RAM, interoperabilidad y seguridad). |
+| **[🏛️ docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** | **Arquitectura del Sistema:** Topología de red, orquestación Docker, diagramas de flujo y justificación técnica de software libre vs propietario. |
+| **[📬 docs/EcoLogistics_Postman_Collection.json](docs/EcoLogistics_Postman_Collection.json)** | **Colección de Postman:** Peticiones REST y sobres SOAP XML preconfigurados listos para importar. |
+| **[🧼 docs/EcoLogistics_SoapUI_Project.xml](docs/EcoLogistics_SoapUI_Project.xml)** | **Proyecto de SoapUI:** Contratos WSDL y operaciones SOAP listos para ejecutar pruebas formales. |
+

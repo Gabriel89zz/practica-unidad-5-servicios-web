@@ -2,7 +2,7 @@
 
 **Materia:** Programación en Ambiente Cliente-Servidor (7.° Semestre)  
 **Carrera:** Ingeniería en Informática  
-**Alumno:** Gabriel  
+**Alumno:** Hector Gabriel Torres Arzola  
 **Servidor de Despliegue:** Debian GNU/Linux 13 (IP: `192.168.1.176`)  
 **Fecha:** Septiembre 2026  
 
