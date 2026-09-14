@@ -78,9 +78,9 @@ async def handle_soap(request: Request):
             elem.tag = elem.tag.split('}', 1)[1]
 
     # Identificar la operación solicitada
-    if root.find(".//CalcularTarifa") is not None:
+    if root.find(".//CalcularTarifa") is not None or root.find(".//CalcularCostoEnvio") is not None:
         return handle_calcular_tarifa(root)
-    elif root.find(".//ConsultarGuia") is not None:
+    elif root.find(".//ConsultarGuia") is not None or root.find(".//RastrearEnvio") is not None:
         return handle_consultar_guia(root)
     else:
         fault = generate_soap_fault("soapenv:Client.UnknownOperation", "Operación no reconocida en el cuerpo SOAP.")

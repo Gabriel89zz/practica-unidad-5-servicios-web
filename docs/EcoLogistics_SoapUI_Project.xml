@@ -39,7 +39,7 @@
     <con:endpoints>
       <con:endpoint>http://192.168.1.176:8082/soap/envios</con:endpoint>
     </con:endpoints>
-    <con:operation id="op-calcular-costo" isOneWay="false" action="" name="CalcularCostoEnvio" bindingOperationName="CalcularCostoEnvio" type="Request-Response" outputName="CalcularCostoEnvioResponse" inputName="CalcularCostoEnvio" receivesAttachments="false" sendsAttachments="false" anonymous="optional">
+    <con:operation id="op-calcular-tarifa" isOneWay="false" action="http://ecommerce.com/envios#CalcularTarifa" name="CalcularTarifa" bindingOperationName="CalcularTarifa" type="Request-Response" outputName="CalcularTarifaResponse" inputName="CalcularTarifa" receivesAttachments="false" sendsAttachments="false" anonymous="optional">
       <con:settings/>
       <con:call id="req-py-tarifa-1" name="Req 1 - Cotizar CDMX a GDL">
         <con:settings/>
@@ -48,12 +48,12 @@
         <con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:env="http://ecommerce.com/envios">
   <soapenv:Header/>
   <soapenv:Body>
-    <env:CalcularCostoEnvio>
+    <env:CalcularTarifa>
       <env:origen>CDMX Centro</env:origen>
       <env:destino>Guadalajara Jalisco</env:destino>
       <env:peso_kg>3.5</env:peso_kg>
       <env:tipo_servicio>EXPRESS</env:tipo_servicio>
-    </env:CalcularCostoEnvio>
+    </env:CalcularTarifa>
   </soapenv:Body>
 </soapenv:Envelope>]]></con:request>
         <con:credentials>

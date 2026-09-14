@@ -206,7 +206,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:env=\"http://ecommerce.com/envios\">\n  <soapenv:Header/>\n  <soapenv:Body>\n    <env:CalcularCostoEnvio>\n      <env:origen>CDMX Centro</env:origen>\n      <env:destino>Guadalajara Jalisco</env:destino>\n      <env:peso_kg>3.5</env:peso_kg>\n      <env:tipo_servicio>EXPRESS</env:tipo_servicio>\n    </env:CalcularCostoEnvio>\n  </soapenv:Body>\n</soapenv:Envelope>"
+              "raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:env=\"http://ecommerce.com/envios\">\n  <soapenv:Header/>\n  <soapenv:Body>\n    <env:CalcularTarifa>\n      <env:origen>CDMX Centro</env:origen>\n      <env:destino>Guadalajara Jalisco</env:destino>\n      <env:peso_kg>3.5</env:peso_kg>\n      <env:tipo_servicio>EXPRESS</env:tipo_servicio>\n    </env:CalcularTarifa>\n  </soapenv:Body>\n</soapenv:Envelope>"
             },
             "url": {
               "raw": "{{base_host}}:8082/soap/envios",
