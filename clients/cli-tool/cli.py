@@ -196,7 +196,48 @@ def cmd_registrar_evento_soap_vbnet(host: str, servicio="CLI_DEVOPS", accion="AU
     else:
         print(f"{Color.RED}[FAIL] Error SOAP HTTP {status} ({latency} ms):\n{content}{Color.RESET}")
 
-# --- 3. Menú Interactivo ---
+# --- 3. Operaciones PHP (:8083) - Órdenes de Compra ---
+
+def cmd_listar_ordenes_php(host: str):
+    url = get_base_url(host, 8083, "/api/v1/ordenes")
+    print(f"{Color.BLUE}[*] Consultando Órdenes de Compra REST en PHP (:8083): {url}...{Color.RESET}")
+    
+    status, content, latency, err = http_request(url, method="GET", headers={"Authorization": AUTH_TOKEN})
+    if status == 200:
+        data = json.loads(content)
+        print(f"{Color.GREEN}[OK] HTTP 200 OK ({latency} ms) - {len(data)} Órdenes Registradas en el Sistema:{Color.RESET}\n")
+        print(f"{Color.BOLD}{'ID ORDEN':<18} {'FECHA':<22} {'CLIENTE':<24} {'ITEMS':<8} {'TOTAL (USD)':<14} {'ESTADO':<12}{Color.RESET}")
+        print("-" * 102)
+        for ord_item in data:
+            items_count = len(ord_item.get('items', []))
+            total_val = f"${float(ord_item.get('total', 0)):.2f}"
+            fecha_str = ord_item.get('fecha_creacion', '')[:19].replace('T', ' ')
+            print(f"{ord_item.get('id',''):<18} {fecha_str:<22} {ord_item.get('cliente_nombre',''):<24} {items_count:<8} {total_val:<14} {ord_item.get('estado',''):<12}")
+        print("-" * 102)
+    else:
+        print(f"{Color.RED}[FAIL] Error HTTP {status} ({latency} ms): {content}{Color.RESET}")
+
+# --- 4. Operaciones Java (:8081) - Catálogo e Inventario ---
+
+def cmd_consultar_inventario_java(host: str):
+    url = get_base_url(host, 8081, "/api/v1/productos")
+    print(f"{Color.BLUE}[*] Consultando Catálogo e Inventario REST en Java Spring Boot (:8081): {url}...{Color.RESET}")
+    
+    status, content, latency, err = http_request(url, method="GET", headers={"Authorization": AUTH_TOKEN})
+    if status == 200:
+        data = json.loads(content)
+        print(f"{Color.GREEN}[OK] HTTP 200 OK ({latency} ms) - {len(data)} Productos en Catálogo:{Color.RESET}\n")
+        print(f"{Color.BOLD}{'SKU':<14} {'PRODUCTO':<32} {'CATEGORÍA':<16} {'PRECIO':<12} {'STOCK':<8}{Color.RESET}")
+        print("-" * 86)
+        for p in data:
+            precio_val = f"${float(p.get('precio', 0)):.2f}"
+            stock_val = str(p.get('stock', 0))
+            print(f"{p.get('sku',''):<14} {p.get('nombre',''):<32} {p.get('categoria',''):<16} {precio_val:<12} {stock_val:<8}")
+        print("-" * 86)
+    else:
+        print(f"{Color.RED}[FAIL] Error HTTP {status} ({latency} ms): {content}{Color.RESET}")
+
+# --- 5. Menú Interactivo ---
 
 def run_interactive_menu(host: str):
     while True:
@@ -207,11 +248,13 @@ def run_interactive_menu(host: str):
         print("   2. [SOAP]  Despachar Alerta Crítica (Ruby :8084)")
         print("   3. [REST]  Consultar Bitácora de Auditoría del Sistema (VB.NET :8086)")
         print("   4. [SOAP]  Registrar Evento de Seguridad en Auditoría (VB.NET :8086)")
-        print("   5. [CONFIG] Cambiar Host / IP del Servidor")
+        print(f"   5. [REST]  {Color.BOLD}Consultar Órdenes de Compra Creadas en la Web (PHP :8083){Color.RESET}")
+        print(f"   6. [REST]  {Color.BOLD}Consultar Catálogo y Existencias de Inventario (Java :8081){Color.RESET}")
+        print("   7. [CONFIG] Cambiar Host / IP del Servidor")
         print("   0. Salir\n")
 
         try:
-            opcion = input(f"{Color.BOLD}Opción [0-5]: {Color.RESET}").strip()
+            opcion = input(f"{Color.BOLD}Opción [0-7]: {Color.RESET}").strip()
         except (KeyboardInterrupt, EOFError):
             print("\nSaliendo...")
             break
@@ -230,6 +273,10 @@ def run_interactive_menu(host: str):
             det = input("Detalles del evento: ").strip() or "Inicio de sesión de administrador remoto"
             cmd_registrar_evento_soap_vbnet(host, accion=acc, detalles=det)
         elif opcion == "5":
+            cmd_listar_ordenes_php(host)
+        elif opcion == "6":
+            cmd_consultar_inventario_java(host)
+        elif opcion == "7":
             new_host = input("Nueva dirección IP o Host (ej. http://192.168.1.50): ").strip()
             if new_host:
                 host = new_host
@@ -246,7 +293,7 @@ def run_interactive_menu(host: str):
 def main():
     parser = argparse.ArgumentParser(description="EcoLogistics CLI - Cliente de Terminal para Microservicios REST & SOAP")
     parser.add_argument("--host", default="http://localhost", help="Dirección base o IP del servidor (default: http://localhost)")
-    parser.add_argument("--service", choices=["destinatarios", "alerta", "logs", "evento"], help="Ejecutar una operación directa")
+    parser.add_argument("--service", choices=["destinatarios", "alerta", "logs", "evento", "ordenes", "inventario"], help="Ejecutar una operación directa")
     parser.add_argument("--mensaje", default="Alerta generada desde CLI", help="Mensaje para el despacho de alertas")
     parser.add_argument("--accion", default="AUDIT_EVENT", help="Acción para el registro de auditoría")
     args = parser.parse_args()
@@ -261,6 +308,10 @@ def main():
             cmd_listar_logs_vbnet(args.host)
         elif args.service == "evento":
             cmd_registrar_evento_soap_vbnet(args.host, accion=args.accion)
+        elif args.service == "ordenes":
+            cmd_listar_ordenes_php(args.host)
+        elif args.service == "inventario":
+            cmd_consultar_inventario_java(args.host)
     else:
         run_interactive_menu(args.host)
 

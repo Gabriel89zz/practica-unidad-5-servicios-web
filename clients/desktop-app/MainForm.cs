@@ -27,6 +27,7 @@ namespace EcoLogistics.DesktopApp
         private TextBox txtIva = null!;
         private TextBox txtTotal = null!;
         private TextBox txtConcepto = null!;
+        private Button btnImportarOrdenPhp = null!;
         private Button btnTimbrarSoap = null!;
         private RichTextBox rtbFacturaResultado = null!;
         private DataGridView dgvFacturas = null!;
@@ -171,9 +172,9 @@ namespace EcoLogistics.DesktopApp
             TableLayoutPanel pnlForm = new TableLayoutPanel
             {
                 Dock = DockStyle.Top,
-                Height = 260,
+                Height = 310,
                 ColumnCount = 2,
-                RowCount = 7
+                RowCount = 8
             };
             pnlForm.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120f));
             pnlForm.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f));
@@ -202,6 +203,21 @@ namespace EcoLogistics.DesktopApp
             AddFormField(pnlForm, 4, "Total ($):", txtTotal);
             AddFormField(pnlForm, 5, "Concepto:", txtConcepto);
 
+            btnImportarOrdenPhp = new Button
+            {
+                Text = "📥 Cargar Última Orden Web (PHP :8083)",
+                Dock = DockStyle.Fill,
+                Height = 32,
+                BackColor = Color.FromArgb(16, 185, 129),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Cursor = Cursors.Hand,
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold)
+            };
+            btnImportarOrdenPhp.FlatAppearance.BorderSize = 0;
+            btnImportarOrdenPhp.Click += async (s, e) => await ImportarOrdenPhpAsync();
+            pnlForm.Controls.Add(btnImportarOrdenPhp, 1, 6);
+
             btnTimbrarSoap = new Button
             {
                 Text = "⚡ Timbrar con SOAP CoreWCF",
@@ -215,7 +231,7 @@ namespace EcoLogistics.DesktopApp
             };
             btnTimbrarSoap.FlatAppearance.BorderSize = 0;
             btnTimbrarSoap.Click += async (s, e) => await TimbrarFacturaSoapAsync();
-            pnlForm.Controls.Add(btnTimbrarSoap, 1, 6);
+            pnlForm.Controls.Add(btnTimbrarSoap, 1, 7);
 
             rtbFacturaResultado = new RichTextBox
             {
@@ -641,6 +657,71 @@ namespace EcoLogistics.DesktopApp
             finally
             {
                 btnListarFacturasRest.Enabled = true;
+            }
+        }
+
+        // 2b. Importar Última Orden Creada en PHP :8083 (Web App)
+        private async Task ImportarOrdenPhpAsync()
+        {
+            btnImportarOrdenPhp.Enabled = false;
+            string url = GetCleanHost(8083, "/api/v1/ordenes");
+            Stopwatch sw = Stopwatch.StartNew();
+
+            try
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Get, url);
+                request.Headers.Add("Authorization", AUTH_TOKEN);
+
+                var response = await _httpClient.SendAsync(request);
+                sw.Stop();
+                string responseJson = await response.Content.ReadAsStringAsync();
+
+                LogNetwork("REST (JSON)", "GET", url, null, responseJson, (int)response.StatusCode, sw.ElapsedMilliseconds);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    using JsonDocument doc = JsonDocument.Parse(responseJson);
+                    bool found = false;
+                    foreach (var item in doc.RootElement.EnumerateArray())
+                    {
+                        string orderId = item.GetProperty("id").GetString() ?? "ORD-2026-001";
+                        string cliente = item.GetProperty("cliente_nombre").GetString() ?? "Cliente Mostrador";
+                        decimal subtotal = item.GetProperty("subtotal").GetDecimal();
+                        decimal impuestos = item.GetProperty("impuestos").GetDecimal();
+                        decimal total = item.GetProperty("total").GetDecimal();
+
+                        txtConcepto.Text = $"Facturación de {orderId} ({cliente})";
+                        txtSubtotal.Text = subtotal.ToString("F2");
+                        txtIva.Text = impuestos.ToString("F2");
+                        txtTotal.Text = total.ToString("F2");
+
+                        rtbFacturaResultado.Text = $"[OK] ¡Orden '{orderId}' importada de PHP (:8083) exitosamente!\n\n" +
+                                                   $"• Cliente     : {cliente}\n" +
+                                                   $"• Subtotal    : ${subtotal:F2} USD\n" +
+                                                   $"• IVA 16%     : ${impuestos:F2} USD\n" +
+                                                   $"• Total Orden : ${total:F2} USD\n\n" +
+                                                   "Haga clic en '⚡ Timbrar con SOAP CoreWCF' para generar el comprobante fiscal ante el SAT en C# (:8085).";
+                        found = true;
+                        break;
+                    }
+
+                    if (!found)
+                    {
+                        MessageBox.Show("No se encontraron órdenes registradas en PHP (:8083).\nGenere una orden de compra desde la Web App primero.", "Sin Órdenes", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show($"Error HTTP {(int)response.StatusCode} al consultar órdenes en PHP: {responseJson}", "Error REST", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al conectar con el microservicio PHP (:8083): " + ex.Message, "Error de Conexión", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                btnImportarOrdenPhp.Enabled = true;
             }
         }
 

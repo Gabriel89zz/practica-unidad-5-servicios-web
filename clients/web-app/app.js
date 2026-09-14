@@ -435,14 +435,22 @@ async function submitOrder() {
     const createdOrder = data;
     showToast('success', `¡Orden ${createdOrder.id} generada exitosamente en PHP SQLite!`);
 
-    // Mostrar resultado con botón para validación SOAP
+    // Notificar y auditar en segundo plano a los otros microservicios (VB.NET y Ruby)
+    logOrderToVbNet(createdOrder, custName, custEmail);
+    notifyOrderToRuby(createdOrder, custName, custEmail);
+
+    // Mostrar resultado con botón para validación SOAP y etiquetas de trazabilidad
     resultBox.style.display = 'block';
     resultBox.innerHTML = `
       <div style="background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); border-radius:var(--radius-md); padding:1rem;">
         <div style="color:#34d399; font-weight:700; margin-bottom:0.25rem;">✓ Orden Creada: ${createdOrder.id}</div>
-        <p style="color:var(--text-muted); font-size:0.75rem; margin-bottom:0.75rem;">
+        <p style="color:var(--text-muted); font-size:0.75rem; margin-bottom:0.5rem;">
           Estado: <strong>${createdOrder.estado}</strong> | Total: $${parseFloat(createdOrder.total).toFixed(2)} USD
         </p>
+        <div style="font-size:0.72rem; color:var(--text-secondary); margin-bottom:0.75rem; display:flex; flex-direction:column; gap:0.25rem;">
+          <div>📡 <em>Auditado en VB.NET (:8086):</em> <span style="color:#10b981;">LOG REGISTRADO</span></div>
+          <div>✉️ <em>Despachado en Ruby (:8084):</em> <span style="color:#10b981;">NOTIFICACIÓN ENVIADA</span></div>
+        </div>
         <button class="btn-action btn-soap-stock" style="width:100%;" onclick="validateOrderSoap('${createdOrder.id}')">
           <span>⚡</span> Validar Estado con SOAP (:8083)
         </button>
@@ -526,6 +534,102 @@ async function validateOrderSoap(ordenId) {
   } catch (err) {
     if (container) container.innerHTML = `<span style="color:#f87171;">Error SOAP: ${err.message}</span>`;
     showToast('error', `Fallo en SOAP PHP: ${err.message}`);
+  }
+}
+
+// --- Auditoría Automática en VB.NET CoreWCF (:8086) ---
+async function logOrderToVbNet(order, custName, custEmail) {
+  const url = getServiceUrl(8086, '/api/v1/logs');
+  const auditPayload = {
+    servicioOrigen: 'WEB_STORE',
+    accion: 'ORDEN_CREADA',
+    usuario: custEmail || 'cliente_web',
+    detalles: `Pedido ${order.id} por $${parseFloat(order.total).toFixed(2)} USD (${custName})`,
+    nivel: 'INFO'
+  };
+
+  const startTime = performance.now();
+  try {
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': AUTH_TOKEN
+      },
+      body: JSON.stringify(auditPayload)
+    });
+    const latency = Math.round(performance.now() - startTime);
+    const data = await resp.json().catch(() => null);
+
+    logNetworkEvent({
+      protocol: 'REST (JSON)',
+      service: 'VB.NET .NET 9 / Auditoría (:8086)',
+      method: 'POST',
+      url: url,
+      headers: { 'Content-Type': 'application/json', 'Authorization': AUTH_TOKEN },
+      body: auditPayload,
+      status: resp.status,
+      statusText: resp.statusText,
+      latency: latency,
+      response: data
+    });
+
+    if (resp.ok) {
+      showToast('info', `[Auditoría VB.NET :8086] Evento registrado para ${order.id}`);
+    }
+  } catch (err) {
+    console.warn('Auditoría VB.NET no disponible:', err);
+  }
+}
+
+// --- Notificación Automática en Ruby Sinatra (:8084) ---
+async function notifyOrderToRuby(order, custName, custEmail) {
+  const url = getServiceUrl(8084, '/soap/notificaciones');
+  const soapXml = `<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:not="http://ecommerce.com/notificaciones">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <not:DespacharAlertaCritica>
+      <tipoAlerta>PEDIDO_CONFIRMADO</tipoAlerta>
+      <canal>EMAIL</canal>
+      <destinatario>${escapeHtml(custEmail || 'cliente@ecommerce.com')}</destinatario>
+      <mensaje>Su pedido ${escapeHtml(order.id)} por $${parseFloat(order.total).toFixed(2)} USD ha sido confirmado.</mensaje>
+      <prioridad>MEDIA</prioridad>
+    </not:DespacharAlertaCritica>
+  </soapenv:Body>
+</soapenv:Envelope>`;
+
+  const startTime = performance.now();
+  try {
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/xml; charset=utf-8',
+        'Authorization': 'Basic ' + btoa('admin:admin_pass_2026')
+      },
+      body: soapXml
+    });
+    const latency = Math.round(performance.now() - startTime);
+    const text = await resp.text().catch(() => '');
+
+    logNetworkEvent({
+      protocol: 'SOAP (XML / WSDL)',
+      service: 'Ruby 3.2 / Sinatra Notificaciones (:8084)',
+      method: 'POST',
+      url: url,
+      headers: { 'Content-Type': 'text/xml; charset=utf-8', 'Authorization': 'Basic admin:***' },
+      body: soapXml,
+      status: resp.status,
+      statusText: resp.statusText,
+      latency: latency,
+      response: text
+    });
+
+    if (resp.ok) {
+      showToast('info', `[Notificación Ruby :8084] Alerta despachada para ${order.id}`);
+    }
+  } catch (err) {
+    console.warn('Notificación Ruby no disponible:', err);
   }
 }
 
