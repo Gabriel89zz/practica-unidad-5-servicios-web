@@ -62,13 +62,13 @@ Los seis microservicios se encuentran publicados y orquestados mediante **Docker
 ### 2.2 Evidencia de Contenedores en Ejecución
 Se verificó el correcto despliegue y estado de salud de los servicios mediante `docker compose ps`:
 
-![Servicios Docker Activos en Debian](img/01_docker_servicios.png)
+![Servicios Docker Activos en Debian](img/01_docker_servidores_activos.png)
 *Figura 1: Verificación de los 6 contenedores Docker activos en Debian 13 con sus respectivos mapeos de puertos (8081 a 8086).*
 
 ### 2.3 Seguridad de Red y Reglas de Firewall (UFW)
 Para garantizar la seguridad perimetral del servidor se configuró el cortafuegos **UFW (Uncomplicated Firewall)** con una política por defecto de denegación total (`Default: deny (incoming)`), autorizando exclusivamente el rango de puertos de la práctica:
 
-![Reglas de Firewall UFW](img/02_firewall_ufw.png)
+![Reglas de Firewall UFW](img/01b_firewall_ufw_puertos.png)
 *Figura 2: Estado del Firewall UFW en Debian 13 mostrando la regla `8081:8086/tcp ALLOW IN Anywhere` sobre política restrictiva `deny`.*
 
 ---
@@ -89,7 +89,7 @@ Cada microservicio implementa formalmente los cuatro verbos HTTP principales del
 ### 3.1 Documentación Interactiva OpenAPI / Swagger
 Los servicios cuentan con su documentación Swagger interactiva disponible en vivo:
 
-![Documentación Swagger UI](img/03_swagger_openapi.png)
+![Documentación Swagger UI](img/02_swagger_openapi_python.png)
 *Figura 3: Documentación OpenAPI 3.0 / Swagger UI generada automáticamente para el microservicio de Logística en Python (:8082), evidenciando los métodos GET, POST, PUT y DELETE.*
 
 ---
@@ -110,7 +110,7 @@ A diferencia de REST, los servicios SOAP basan su comunicación en el estándar 
 ### 4.1 Inspección del Contrato WSDL en Navegador
 Al ingresar a la URL del contrato WSDL en el navegador, el servidor retorna el esquema XML formal:
 
-![Contrato WSDL Formal](img/04_contrato_wsdl.png)
+![Contrato WSDL Formal](img/03_contrato_wsdl_soap.png)
 *Figura 4: Estructura del contrato WSDL del servicio SOAP de Facturación en C# (:8085), mostrando la definición de tipos complejos, mensajes de entrada/salida y bindings.*
 
 ---
@@ -126,7 +126,7 @@ El ecosistema aplica el principio de **Defensa en Profundidad**:
    - Ante fallos, devuelve un **`SOAP-ENV:Fault`** estructurado (`Client.AuthenticationFailed`).
 
 ### 5.1 Evidencia de Bloqueo por Falta de Token (HTTP 401)
-![Seguridad HTTP 401](img/05_seguridad_401.png)
+![Seguridad HTTP 401](img/04_seguridad_401_unauthorized.png)
 *Figura 5: Rechazo inmediato de acceso con código HTTP 401 Unauthorized y mensaje JSON al consultar un endpoint protegido sin credenciales.*
 
 ---
@@ -138,13 +138,13 @@ Para validar la interoperabilidad con herramientas profesionales estándar de la
 ### 6.1 Pruebas REST y SOAP en Postman
 Se importó la colección `docs/EcoLogistics_Postman_Collection.json` con variables de entorno:
 
-![Pruebas en Postman](img/06_postman_coleccion.png)
+![Pruebas en Postman](img/05_pruebas_postman_coleccion.png)
 *Figura 6: Ejecución exitosa de una petición SOAP de timbrado fiscal en Postman con resultado HTTP 200 OK y generación del Folio Fiscal UUID.*
 
 ### 6.2 Pruebas de Contrato WSDL en SoapUI
 Se importó el proyecto `docs/EcoLogistics_SoapUI_Project.xml`:
 
-![Pruebas en SoapUI](img/07_soapui_prueba.png)
+![Pruebas en SoapUI](img/06_pruebas_soapui_wsdl.png)
 *Figura 7: Consumo de la operación CalcularTarifa en SoapUI, mostrando el sobre XML de entrada y la respuesta con el cálculo logístico devuelto por Python.*
 
 ---
@@ -160,16 +160,16 @@ Orientada al comprador final. Desarrollada en HTML5, CSS3 y Vanilla JavaScript s
   * Genera la guía de rastreo en **Python (:8082)** (`GUIA-2026-XXXX`).
   * Audita la compra en **VB.NET (:8086)** y despacha correo en **Ruby (:8084)**.
 
-![Web Catálogo Conectado](img/08_web_catalogo.png)
+![Web Catálogo Conectado](img/07_web_catalogo_conectado.png)
 *Figura 8: Tienda Web conectada al servidor Debian (`http://192.168.1.176`) con catálogo de productos en vivo.*
 
-![Web Orden y Guía Generada](img/09_web_orden_guia.png)
+![Web Orden y Guía Generada](img/08_web_orden_y_guia_creada.png)
 *Figura 9: Carrito de compras con orden generada en PHP y guía de paquetería creada automáticamente por Python.*
 
-![Web Rastreador de Paquetería](img/10_web_rastreo.png)
+![Web Rastreador de Paquetería](img/09_web_rastreo_tiempo_real.png)
 *Figura 10: Nueva sección de rastreo en tiempo real dentro de la tienda web mostrando la línea de tiempo del paquete.*
 
-![Web Inspector de Red](img/11_web_inspector_red.png)
+![Web Inspector de Red](img/10_web_inspector_red_headers.png)
 *Figura 11: Inspector de red desplegado mostrando encabezados HTTP, payloads y latencia en milisegundos.*
 
 ---
@@ -179,10 +179,10 @@ Orientada al personal operativo, contable y de almacén. Desarrollada en **C# .N
 - **Pestaña 1 (Facturación SAT):** El botón *"📥 Cargar Última Orden Web"* jala la compra hecha por el cliente web desde PHP (:8083) y el botón *"⚡ Timbrar con SOAP"* emite el comprobante fiscal digital CFDI 4.0 ante el SAT en C# (:8085).
 - **Pestaña 2 (Logística y Envíos):** El botón *"📥 Cargar Guía Web"* obtiene la guía generada y *"🚚 Avanzar Estado de Entrega"* transiciona el paquete de `PREPARACION` a `EN_TRANSITO` y `ENTREGADO`.
 
-![Desktop Facturación SAT](img/12_desktop_facturacion.png)
+![Desktop Facturación SAT](img/11_desktop_facturacion_sat_soap.png)
 *Figura 12: Módulo Desktop de Facturación SAT mostrando la orden importada de la Web y timbrada exitosamente vía SOAP CoreWCF.*
 
-![Desktop Logística y Envíos](img/13_desktop_logistica.png)
+![Desktop Logística y Envíos](img/12_desktop_logistica_avance_guia.png)
 *Figura 13: Módulo Desktop de Logística con cotizador SOAP a la izquierda y avance de estado del paquete en ruta a la derecha.*
 
 ---
@@ -191,7 +191,7 @@ Orientada al personal operativo, contable y de almacén. Desarrollada en **C# .N
 Orientada a administradores de sistemas y DevOps. Desarrollada en Python 3 puro:
 - Permite auditar y supervisar los 6 microservicios desde cualquier consola o sesión remota SSH.
 
-![CLI Terminal Auditoría](img/14_cli_auditoria.png)
+![CLI Terminal Auditoría](img/13_cli_terminal_auditoria_envios.png)
 *Figura 14: Herramienta de consola CLI mostrando el menú principal y la auditoría en vivo de guías logísticas registradas en el backend.*
 
 ---
